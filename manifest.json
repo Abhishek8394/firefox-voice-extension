@@ -15,6 +15,12 @@
     },
 	"matches":["*://*"],
     "background":{
-    	"scripts":["background/classes.js","background/bgscript.js"]
+    	"scripts":[
+    		"background/intentMappings.js",
+    		"background/router.js",
+    		"background/tabManager.js",
+    		"background/search.js",
+    		"background/bgscript.js"
+    		]
     	}
 }

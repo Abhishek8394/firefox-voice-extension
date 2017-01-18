@@ -1,13 +1,50 @@
+/* For testing routing */
+var eventTest = ["printRoutes","create_tab","search_intent","close_tab","foo_illegal"];
+var ctr = 0;
+/* --------------- */
+
+// Maintain list of tabs that are already loaded, avoid loading content scripts twice.
+var initializedTabs = {};
+
 // Handle initialization of newly created tab. 
-function newTabHandler(tab){
-	// console.log(tab);
+function createdTabHandler(tab){
+	initializeTab(tab);
+}
+// Handle initialization of updated tab. 
+function updatedTabHandler(tab){
+	// for debugging -----
+	// console.log("dispatching "+eventTest[ctr]);
+	// var msg = {hello:"hi",eventType:eventTest[ctr]};
+	// browser.runtime.sendMessage(msg);
+	// ctr = (ctr+1)%eventTest.length;	
+	//  -------------------
 	initializeTab(tab);	
+}
+
+//handle closing  of tabs
+function removedTabHandler(tab){
+	if(initializedTabs[tab.id]!=undefined){
+		delete initializedTabs[tab.id];
+	}
 }
 
 // Load Content scripts and other stuff to prepare for voice control
 function initializeTab(t){
+	if(initializedTabs[t.id]!=undefined){		
+		initializedTabs[t.id] = true;
+		// console.log("collision");
+		return;
+	}
 	//TODO load content scripts
-	// browser.tabs.update(t.id,{url:"https://www.google.com"});
+	browser.tabs.executeScript(t.id,{file:browser.extension.getURL("/browser_action/contentSample.js")});
+	//for debugging-----------------
+	// var tablist = browser.tabs.query({});
+	// tablist.then(function(tabs){
+	// 	for(f of tabs){
+	// 		browser.tabs.sendMessage(f.id,{hello:"hi",eventType:eventTest[ctr],tid:f.id});
+	// 	}
+	// },tabQueryErrorHandler);
+	// ------------------------------
 }
 
 // Perform initialization of all existing tabs
@@ -46,7 +83,9 @@ function connectBackend(){
 }
 
 function globalInit(){	
-	browser.tabs.onCreated.addListener(newTabHandler);
+	browser.tabs.onCreated.addListener(createdTabHandler);
+	browser.tabs.onUpdated.addListener(updatedTabHandler);
+	browser.tabs.onRemoved.addListener(removedTabHandler);
 	initializeExistingTabs();
 	connectBackend();
 }
