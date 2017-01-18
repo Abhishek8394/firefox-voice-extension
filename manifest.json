@@ -1,0 +1,20 @@
+{
+	"manifest_version":2,
+	"name":"Voice Control",
+	"version":"1.0",
+	"permissions":[
+		"<all_urls>",
+		"activeTab",
+		"storage"
+	],
+	
+	"browser_action":{
+		"default_icon":"icons/icon.png",
+	    "default_title": "Voice Control",
+	    "default_popup": "browser_action/index.html"
+    },
+	"matches":["*://*"],
+    "background":{
+    	"scripts":["background/bgscript.js"]
+    	}
+}
