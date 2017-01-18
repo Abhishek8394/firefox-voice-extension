@@ -15,6 +15,6 @@
     },
 	"matches":["*://*"],
     "background":{
-    	"scripts":["background/bgscript.js"]
+    	"scripts":["background/classes.js","background/bgscript.js"]
     	}
 }
