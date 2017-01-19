@@ -1,5 +1,5 @@
 /* For testing routing */
-var eventTest = ["printRoutes","create_tab","search_intent","close_tab","foo_illegal"];
+var eventTest = ["search_intent","create_tab","printRoutes","close_tab","foo_illegal"];
 var ctr = 0;
 /* --------------- */
 
@@ -31,15 +31,20 @@ function removedTabHandler(tab){
 // Load Content scripts and other stuff to prepare for voice control
 function initializeTab(t){
 	if(initializedTabs[t.id]!=undefined){		
-		initializedTabs[t.id] = true;
+		// initializedTabs[t.id] = true;
 		// console.log("collision");
 		return;
 	}
 	//TODO load content scripts
-	browser.tabs.executeScript(t.id,{file:browser.extension.getURL("/background/router.js")});
-	browser.tabs.executeScript(t.id,{file:browser.extension.getURL("/browser_action/contentSample.js")});
+	loadContentScripts(t);		
 }
 
+function loadContentScripts(tab){	
+	// contentScriptsToLoad defined in intentMappings.js	
+	for(cs of contentScriptsToLoad){		
+		browser.tabs.executeScript(tab.id,{file:browser.extension.getURL(cs)});
+	}
+}
 // broadcast event to background scripts as well as content scripts
 function broadCastAll(msg){
 	broadcastToBackgroundScripts(msg);
@@ -92,10 +97,19 @@ function connectBackend(){
 
 }
 
+function msgFromContentScript(msg){
+	console.log("rcvd msg from content script");
+	console.log(msg);
+}
+
 function globalInit(){	
 	browser.tabs.onCreated.addListener(createdTabHandler);
 	browser.tabs.onUpdated.addListener(updatedTabHandler);
 	browser.tabs.onRemoved.addListener(removedTabHandler);
+	// Receive messages from content scripts
+	router.registerRoute("msg_from_local_content_script",msgFromContentScript);
+	// In case need for long lived connections realized, go this path.
+		// browser.runtime.onConnect.addListener(onContentScriptConnect);
 	initializeExistingTabs();
 	connectBackend();
 }
