@@ -8,16 +8,16 @@ var initializedTabs = {};
 
 // Handle initialization of newly created tab. 
 function createdTabHandler(tab){
+	// for debugging -----
+	console.log("dispatching "+eventTest[ctr]);
+	var msg = {hello:"hi",eventType:eventTest[ctr]};
+	broadCastAll(msg);
+	ctr = (ctr+1)%eventTest.length;	
+	//  -------------------
 	initializeTab(tab);
 }
 // Handle initialization of updated tab. 
 function updatedTabHandler(tab){
-	// for debugging -----
-	// console.log("dispatching "+eventTest[ctr]);
-	// var msg = {hello:"hi",eventType:eventTest[ctr]};
-	// browser.runtime.sendMessage(msg);
-	// ctr = (ctr+1)%eventTest.length;	
-	//  -------------------
 	initializeTab(tab);	
 }
 
@@ -36,15 +36,25 @@ function initializeTab(t){
 		return;
 	}
 	//TODO load content scripts
+	browser.tabs.executeScript(t.id,{file:browser.extension.getURL("/background/router.js")});
 	browser.tabs.executeScript(t.id,{file:browser.extension.getURL("/browser_action/contentSample.js")});
-	//for debugging-----------------
-	// var tablist = browser.tabs.query({});
-	// tablist.then(function(tabs){
-	// 	for(f of tabs){
-	// 		browser.tabs.sendMessage(f.id,{hello:"hi",eventType:eventTest[ctr],tid:f.id});
-	// 	}
-	// },tabQueryErrorHandler);
-	// ------------------------------
+}
+
+// broadcast event to background scripts as well as content scripts
+function broadCastAll(msg){
+	broadcastToBackgroundScripts(msg);
+	broadcastToContentScripts(msg);
+}
+function broadcastToContentScripts(msg){
+	var tablist = browser.tabs.query({});
+	tablist.then(function(tabs){
+		for(f of tabs){
+			browser.tabs.sendMessage(f.id,{hello:"hi",eventType:eventTest[ctr],tid:f.id});
+		}
+	},tabQueryErrorHandler);
+}
+function broadcastToBackgroundScripts(msg){
+	browser.runtime.sendMessage(msg);
 }
 
 // Perform initialization of all existing tabs

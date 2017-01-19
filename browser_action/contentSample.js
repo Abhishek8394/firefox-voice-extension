@@ -3,7 +3,7 @@ function foo(msg){
 	console.log(msg);
 }
 console.log("foo");
-browser.runtime.onMessage.addListener(foo);
+router.registerRoute("search_intent",foo);
 document.addEventListener("click",function(e){
 	if(e.target.classList.contains("ntab")){
 		browser.tabs.create({url:"https://www.google.com"});
