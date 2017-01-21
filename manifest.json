@@ -21,6 +21,7 @@
     		"background/router.js",
     		"background/tabManager.js",
     		"background/search.js",
+    		"background/vopInterface.js",
     		"background/bgscript.js"
     		]
     	}

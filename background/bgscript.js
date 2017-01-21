@@ -82,14 +82,17 @@ function initializeExistingTabs(){
 
 function connectBackend(){	
 	var wbsock = new WebSocket("ws://127.0.0.1:8080/"+"hi");
+	var wbsockVOPIntf;
 	wbsock.onerror = function(err){
 		console.log("err");
 	};
-	wbsock.onmessage = function(event){
-		console.log(event.data);
-	}
+	// wbsock.onmessage = function(event){
+	// 	console.log(event.data);
+	// }
 	wbsock.onopen = function(event){	
-		wbsock.send("hello");
+		// wbsock.send("hello");
+		wbsockVOPIntf = new VopInterface(wbsock);
+		wbsockVOPIntf.establishConnection();
 		console.log("writing socket");
 	};
 	console.log("socket defined");
