@@ -12,3 +12,8 @@ const AppConnectionStates = {
 	REGISTERING:2,
 	CONNECTED:3
 };
+
+const ResponseTypes = {
+	plainText:"PlainText",
+	ssml:"SSML"
+};
