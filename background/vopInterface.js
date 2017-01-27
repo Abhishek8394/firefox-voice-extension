@@ -28,7 +28,7 @@ VopInterface.prototype.write = function(msgObj){
 };
 
 VopInterface.prototype.readEventHandler = function(e){
-	var data = JSON.parse(e.data);
+	var data = new VopMessage(JSON.parse(e.data),this);
 	console.log(data);
 	if(!this.dataFromValidSource(data)){
 		return undefined;
@@ -49,7 +49,7 @@ VopInterface.prototype.buildSpeechletResponse = function(sessionAttributes,outpu
 // Verify incoming request is valid. For now just check validity of source
 VopInterface.prototype.dataFromValidSource = function(data){
 	try{		
-		if(data.session.application.applicationId == APP_NAME_REGISTERED_AT_VOP){
+		if(data.getApplicationId() == APP_NAME_REGISTERED_AT_VOP){
 			return true;
 		}
 	}catch(e){}
@@ -58,7 +58,7 @@ VopInterface.prototype.dataFromValidSource = function(data){
 
 VopInterface.prototype.processRequest = function(data){
 	// RequestTypes defined in intentMappings.js
-	switch(data.request.type){
+	switch(data.getRequestType()){
 		case RequestTypes.launchRequest:
 			this.processLaunchRequest(data);
 			break;
@@ -73,10 +73,10 @@ VopInterface.prototype.processRequest = function(data){
 
 VopInterface.prototype.processLaunchRequest = function(data){
 	// send help options
-	var response  = this.buildSpeechletResponse(data.session.attributes,"Ask firefox something to do","",false);
+	var response  = this.buildSpeechletResponse(data.getAllSessionAttributes(),"Ask firefox something to do","",false);
 	
 	// session testing
-	var tmp = data.session.attributes.foo==undefined?0:(parseInt(data.session.attributes.foo.value)+1);
+	var tmp = data.session.attributes.foo==undefined?0:(parseInt(data.getSessionAttribute("foo"))+1);
 	response.addSessionAttribute("foo",tmp);
 	console.log(response);
 
@@ -84,13 +84,13 @@ VopInterface.prototype.processLaunchRequest = function(data){
 };
 
 VopInterface.prototype.processIntentRequest = function(data){
-	// send intent to router
-	data.vopInterface = this;
+	// pass an pointer to this interface so that script handlers can manipulate session and interact with server if needed
+	// send intent to router and content scripts
 	broadCastAll(data);
 };
 
 VopInterface.prototype.processSessionEndedRequest = function(data){
 	// remove any session data being maintained.
-	var response = this.buildSpeechletResponse(data.session.attributes,"","",true);
+	var response = this.buildSpeechletResponse(data.getAllSessionAttributes(),"","",true);
 	this.write(response);
 };

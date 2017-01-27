@@ -8,13 +8,12 @@ var initializedTabs = {};
 
 // Handle initialization of newly created tab. 
 function createdTabHandler(tab){
-	// for debugging -----
-	console.log("dispatching "+eventTest[ctr]);
-	var msg = {hello:"hi",request:{intent:{name:eventTest[ctr]}}};
-	broadCastAll(msg);
-	ctr = (ctr+1)%eventTest.length;	
-	//  -------------------
-	initializeTab(tab);
+	// // for debugging -----
+	// console.log("dispatching "+eventTest[ctr]);
+	// var msg = {hello:"hi",request:{intent:{name:eventTest[ctr]}}};
+	// broadCastAll(msg);
+	// ctr = (ctr+1)%eventTest.length;	
+	// //  -------------------
 }
 // Handle initialization of updated tab. 
 function updatedTabHandler(tab){
@@ -44,9 +43,9 @@ function loadContentScripts(tab){
 	for(cs of contentScriptsToLoad){		
 		var injectScript = browser.tabs.executeScript(tab.id,{file:browser.extension.getURL(cs)});
 		injectScript.then(function(obj){
-			// console.log("successfully injected "+tab.id);
+			// console.log("successfully injected "+cs+" in "+tab.id);
 		},function(e){
-			console.log("error injecting script " + tab.id);
+			console.log("error injecting script "+cs+" in " + tab.id);
 		});
 	}
 }
@@ -59,7 +58,7 @@ function broadcastToContentScripts(msg){
 	var tablist = browser.tabs.query({});
 	tablist.then(function(tabs){
 		for(f of tabs){
-			browser.tabs.sendMessage(f.id,msg);
+			browser.tabs.sendMessage(f.id,{session:msg.session,request:msg.request});
 		}
 	},tabQueryErrorHandler);
 }
