@@ -14,12 +14,15 @@ var Router = function(){
 };
 var router = new Router();
 function msgRcv(msg){
-	if(msg.eventType=="printRoutes"){		
+	console.log(msg);
+	// if msg.request form for vop requests. msg.eventType for content script requests.
+	var intentName = msg.request==undefined?msg.eventType:msg.request.intent.name;
+	if(intentName=="printRoutes"){		
 		router.printRoutes();
 	}
 	else{
-		if(router.routes[msg.eventType]!=undefined){
-			for(f of router.routes[msg.eventType]){
+		if(router.routes[intentName]!=undefined){
+			for(f of router.routes[intentName]){
 				f(msg);
 			}
 		}

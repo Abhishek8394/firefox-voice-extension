@@ -10,7 +10,7 @@ var initializedTabs = {};
 function createdTabHandler(tab){
 	// for debugging -----
 	console.log("dispatching "+eventTest[ctr]);
-	var msg = {hello:"hi",eventType:eventTest[ctr]};
+	var msg = {hello:"hi",request:{intent:{name:eventTest[ctr]}}};
 	broadCastAll(msg);
 	ctr = (ctr+1)%eventTest.length;	
 	//  -------------------
@@ -42,7 +42,12 @@ function initializeTab(t){
 function loadContentScripts(tab){	
 	// contentScriptsToLoad defined in intentMappings.js	
 	for(cs of contentScriptsToLoad){		
-		browser.tabs.executeScript(tab.id,{file:browser.extension.getURL(cs)});
+		var injectScript = browser.tabs.executeScript(tab.id,{file:browser.extension.getURL(cs)});
+		injectScript.then(function(obj){
+			// console.log("successfully injected "+tab.id);
+		},function(e){
+			console.log("error injecting script " + tab.id);
+		});
 	}
 }
 // broadcast event to background scripts as well as content scripts
@@ -54,12 +59,14 @@ function broadcastToContentScripts(msg){
 	var tablist = browser.tabs.query({});
 	tablist.then(function(tabs){
 		for(f of tabs){
-			browser.tabs.sendMessage(f.id,{hello:"hi",eventType:eventTest[ctr],tid:f.id});
+			browser.tabs.sendMessage(f.id,msg);
 		}
 	},tabQueryErrorHandler);
 }
 function broadcastToBackgroundScripts(msg){
-	browser.runtime.sendMessage(msg);
+	// browser.runtime.sendMessage(msg);
+	// browser.runtime.sendMessage does not work anymore. Workaround.
+	msgRcv(msg);
 }
 
 // Perform initialization of all existing tabs

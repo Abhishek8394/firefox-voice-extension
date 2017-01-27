@@ -17,3 +17,9 @@ const ResponseTypes = {
 	plainText:"PlainText",
 	ssml:"SSML"
 };
+
+const RequestTypes = {
+	launchRequest: "LaunchRequest",
+	intentRequest: "IntentRequest",
+	sessionEndedRequest: "SessionEndedRequest"
+};
