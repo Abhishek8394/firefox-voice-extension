@@ -22,8 +22,9 @@ function updatedTabHandler(tab){
 
 //handle closing  of tabs
 function removedTabHandler(tab){
-	if(initializedTabs[tab.id]!=undefined){
-		delete initializedTabs[tab.id];
+	console.log(tab);
+	if(initializedTabs[tab]!=undefined){
+		delete initializedTabs[tab];
 	}
 }
 
