@@ -4,7 +4,7 @@ var ctr = 0;
 /* --------------- */
 
 // Maintain list of tabs that are already loaded, avoid loading content scripts twice.
-var initializedTabs = {};
+var initializedTabs = new InitializedTabsRegistry();
 
 // Handle initialization of newly created tab. 
 function createdTabHandler(tab){
@@ -16,7 +16,7 @@ function createdTabHandler(tab){
 	// //  -------------------
 }
 // Handle initialization of updated tab. 
-function updatedTabHandler(tab){
+function updatedTabHandler(tabId,changInfo,tab){
 	initializeTab(tab);	
 }
 
@@ -29,14 +29,22 @@ function removedTabHandler(tab){
 
 // Load Content scripts and other stuff to prepare for voice control
 function initializeTab(t){
-	if(initializedTabs[t.id]!=undefined){		
-		// initializedTabs[t.id] = true;
-		// console.log("collision");
-		return;
+	if(!initializedTabs.hasTab(t)){		
+		//TODO load content scripts
+		loadContentScripts(t);
+		initializedTabs.addEntry(t);
+		// loadMainContentScript(t);	
+		// initializedTabs[t.id] = t;			
 	}
-	//TODO load content scripts
-	loadContentScripts(t);	
-	initializedTabs[t.id] = t;	
+}
+
+function loadMainContentScript(tab){
+	var injectScript = browser.tabs.executeScript(tab.id,{file:browser.extension.getURL(MyConstants.mainContentScript)});
+	injectScript.then(function(obj){
+		// console.log("successfully injected "+cs+" in "+tab.id);
+	},function(e){
+		console.log("error injecting script "+MyConstants.mainContentScript+" in " + tab.id);
+	});
 }
 
 function loadContentScripts(tab){	
@@ -114,12 +122,20 @@ function msgFromContentScript(msg){
 	}
 }
 
+// When a browser tab asks for content scripts.
+function contentScriptsLoader(msg){
+	console.log(msg.tab);
+	console.log("requested cs'");
+	loadContentScripts(msg.tab);
+}
+
 function globalInit(){	
 	browser.tabs.onCreated.addListener(createdTabHandler);
 	browser.tabs.onUpdated.addListener(updatedTabHandler);
 	browser.tabs.onRemoved.addListener(removedTabHandler);
 	// Receive messages from content scripts
 	router.registerRoute("msg_from_local_content_script",msgFromContentScript);
+	// router.registerRoute("need_content_scripts",contentScriptsLoader);
 	// In case need for long lived connections realized, go this path.
 		// browser.runtime.onConnect.addListener(onContentScriptConnect);
 	initializeExistingTabs();

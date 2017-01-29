@@ -18,8 +18,9 @@
     "background":{
     	"scripts":[
     		"background/intentMappings.js",
-    		"background/sessions.js",
-    		"background/router.js",
+            "background/sessions.js",
+            "background/router.js",
+            "background/utility.js",
     		"background/tabManager.js",
     		"background/search.js",
     		"background/requestResponse.js",
