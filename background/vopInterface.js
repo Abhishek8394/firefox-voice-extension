@@ -24,6 +24,7 @@ VopInterface.prototype.write = function(msgObj){
 		var data = JSON.stringify(msgObj);
 		this.socket.send(data);
 		this.socket.send("\r\n");
+		console.log(msgObj);
 	}
 };
 
@@ -44,6 +45,11 @@ VopInterface.prototype.appNamePacket = function(){
 
 VopInterface.prototype.buildSpeechletResponse = function(sessionAttributes,output,repromptText,shouldEndSession){
 	return new SpeechletResponse(sessionAttributes,ResponseTypes.plainText,output,ResponseTypes.plainText,repromptText,shouldEndSession);
+};
+
+VopInterface.prototype.quickReply = function(sessionAttributes,output,repromptText,shouldEndSession){
+	var resp = new SpeechletResponse(sessionAttributes,ResponseTypes.plainText,output,ResponseTypes.plainText,repromptText,shouldEndSession);
+	this.write(resp);
 };
 
 // Verify incoming request is valid. For now just check validity of source

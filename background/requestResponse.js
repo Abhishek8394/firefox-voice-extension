@@ -118,3 +118,15 @@ VopMessage.prototype.getSlot = function(key){
 	if(this.getAllSlots()==undefined){return undefined;}
 	return this.getAllSlots()[key];
 };
+
+// For uncloneable error when passing vopmessage to content script
+VopMessage.prototype.getFormattedForContentScript = function(){
+	return {
+		session:this.getSession(),
+		request:this.getRequest()
+	};
+};
+
+VopMessage.reconstructFromContentScript = function(msg){
+	var session_tmp = msg.session;
+};

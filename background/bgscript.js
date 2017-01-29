@@ -58,7 +58,7 @@ function broadcastToContentScripts(msg){
 	var tablist = browser.tabs.query({});
 	tablist.then(function(tabs){
 		for(f of tabs){
-			browser.tabs.sendMessage(f.id,{session:msg.session,request:msg.request});
+			browser.tabs.sendMessage(f.id,msg.getFormattedForContentScript());
 		}
 	},tabQueryErrorHandler);
 }
@@ -88,7 +88,6 @@ function initializeExistingTabs(){
 
 function connectBackend(){	
 	var wbsock = new WebSocket("ws://127.0.0.1:8080/"+"hi");
-	var wbsockVOPIntf;
 	wbsock.onerror = function(err){
 		console.log("err");
 	};
@@ -107,8 +106,11 @@ function connectBackend(){
 }
 
 function msgFromContentScript(msg){
-	console.log("rcvd msg from content script");
-	console.log(msg);
+	// console.log("rcvd msg from content script");
+	// console.log(msg);
+	if(msg.forVop){
+		wbsockVOPIntf.quickReply(msg.data.sessionAttributes,msg.data.outputText,msg.data.repromptText,msg.data.shouldEndSession);
+	}
 }
 
 function globalInit(){	
@@ -124,3 +126,4 @@ function globalInit(){
 }
 
 globalInit();
+var wbsockVOPIntf;

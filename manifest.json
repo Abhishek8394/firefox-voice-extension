@@ -25,6 +25,9 @@
     		"background/requestResponse.js",
     		"background/vopInterface.js",
     		"background/bgscript.js"
-    		]
-    	}
+    	]
+    },
+    "options_ui":{
+    	"page":"options/index.html"
+    }
 }

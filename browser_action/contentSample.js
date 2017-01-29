@@ -8,5 +8,5 @@ document.addEventListener("click",function(e){
 		browser.tabs.create({url:"https://www.google.com"});
 	}
 	console.log(session.get("lastSentBy"));	
-	informBackground(e.target.innerText.substring(0,4),"clicked me!");
+	informBackground({clicked:e.target.innerText.substring(0,4)});
 });
