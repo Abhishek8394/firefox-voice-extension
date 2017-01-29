@@ -1,7 +1,7 @@
 function play(msg){
 	var videos = getVideoElement(msg);
 	console.log(videos);
-	if(videos==undefined){return;}
+	if(videos.length==0){return;}
 	for(video of videos){
 		video.play();
 	}
@@ -9,7 +9,7 @@ function play(msg){
 
 function pause(msg){
 	var videos = getVideoElement(msg);
-	if(videos==undefined){return;}
+	if(videos.length==0){return;}
 	for(video of videos){
 		video.pause();
 	}
@@ -21,6 +21,9 @@ function getVideoElement(msg){
 }
 
 function videoController(msg){
+	var videos = getVideoElement(msg);
+	console.log(videos);
+	if(videos.length==0){return;}
 	msg = new VopMessage(msg,undefined);
 	console.log(msg);
 	switch(msg.request.intent.slots.action.value){

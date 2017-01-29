@@ -35,7 +35,8 @@ function initializeTab(t){
 		return;
 	}
 	//TODO load content scripts
-	loadContentScripts(t);		
+	loadContentScripts(t);	
+	initializedTabs[t.id] = t;	
 }
 
 function loadContentScripts(tab){	
