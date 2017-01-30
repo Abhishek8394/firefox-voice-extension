@@ -5,6 +5,7 @@ const intent2script = {
 	"search_intent":"search"
 };
 const APP_NAME_REGISTERED_AT_VOP = "firefox-extension";
+const FORM_FILLER_INTENT = "form_input";
 const AppConnectionStates = {
 	UNCONNECTED:1,
 	REGISTERING:2,
@@ -29,6 +30,8 @@ const contentScriptsToLoad = [
 	"/background/requestResponse.js",
 	"/background/vopInterface.js",
 	"/content_scripts/backendInterface.js",
+	"/content_scripts/contentUtility.js",
 	"/browser_action/contentSample.js",
-	"/content_scripts/videoController.js"
+	"/content_scripts/videoController.js",
+	"/content_scripts/FormFiller.js"
 ];

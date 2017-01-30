@@ -64,7 +64,12 @@ function broadCastAll(msg){
 	broadcastToContentScripts(msg);
 }
 function broadcastToContentScripts(msg){
-	var tablist = browser.tabs.query({});
+	var browserTabQuery={};
+	if(msg.getIntentName()==FORM_FILLER_INTENT){
+		console.log("viola!");
+		browserTabQuery = {currentWindow:true,active:true};
+	}
+	var tablist = browser.tabs.query(browserTabQuery);
 	tablist.then(function(tabs){
 		for(f of tabs){
 			browser.tabs.sendMessage(f.id,msg.getFormattedForContentScript());

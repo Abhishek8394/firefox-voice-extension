@@ -8,7 +8,7 @@ function informBackground(data,forVop=false){
 	};
 	// console.log("sending "+msg);
 	browser.runtime.sendMessage(msg);
-	session.add("lastSentBy",tab);
+	// session.add("lastSentBy",tab);
 }
 
 function sendMessageToVop(vopMsgRcvd,outputText,repromptText,shouldEndSession=false){
