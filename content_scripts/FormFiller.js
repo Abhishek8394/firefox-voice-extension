@@ -6,6 +6,7 @@ function captureAllForms(){
 	if(forms!=undefined && forms.length>0){
 		formFillerSession.add("all_forms",forms);
 	}
+	console.log(forms);
 	if(forms.length==1){
 		formFillerSession.add('current_form',forms[0]);
 	}
@@ -108,37 +109,37 @@ function formInputHandler(msg){
 		for(element of inpElements[inputGroup]){
 			if(isLegitInput(element)){				
 				elementOffset=tmpCtr;
-				formFillerSession.add("input_element_index",0);		
+				formFillerSession.add("input_element_index",0);	
+				highlightElement(inpElements[inputGroup][elementOffset],"green");	
 				break;
 			}
 			tmpCtr+=1;
 		}
 	}
-	// var inputYesHandler = function(msg,userReply){
-	// 	var chosenInputField = inpElements[inputGroup][elementOffset];
-	// 	console.log(chosenInputField);
-	// 	formFillerSession.add("current_input_field",chosenInputField);
-		
-	// };
-	// // When asking to confirm a input Element and user says no
-	// var inputNoHandler = function(msg,userReply){
-	// 	unHighlightElement(inpElements[inputGroup][elementOffset]);
-	// 	var currOffset = elementOffset;
-	// 	elementOffset = (elementOffset+1)%inpElements[inputGroup].length;
-	// 	while(!isLegitInput(inpElements[inputGroup][elementOffset])){
-	// 		elementOffset = (elementOffset+1)%inpElements[inputGroup].length;
-	// 		if(elementOffset==currOffset){break;}
-	// 	}
-	// 	addSessionAttribute(msg,"input_element_index",elementOffset);
-	// 	formFillerSession.add('input_element_index',elementOffset);
-	// 	highlightElement(forms[elementOffset]);
-	// 	sendMessageToVop(msg,"Perform input on element number "+(elementOffset+1)+"?","Answer in a yes or no");
-	// };
-	// var inputReplyHandlers = [
-	// 	{ name:"yes", handler:inputYesHandler },
-	// 	{ name:"no", handler:inputNoHandler }
-	// ];
-	// ElementPicker(msg,inpElements[inputGroup],"input_element_index","chooseInputIndex",formFillerSession,inputReplyHandlers,shouldHighlight,"green");
+	var inputYesHandler = function(msg,userReply){
+		var chosenInputField = inpElements[inputGroup][elementOffset];
+		console.log(chosenInputField);
+		formFillerSession.add("current_input_field",chosenInputField);		
+	};
+	// When asking to confirm a input Element and user says no
+	var inputNoHandler = function(msg,userReply){
+		unHighlightElement(inpElements[inputGroup][elementOffset]);
+		var currOffset = elementOffset;
+		elementOffset = (elementOffset+1)%inpElements[inputGroup].length;
+		while(!isLegitInput(inpElements[inputGroup][elementOffset])){
+			elementOffset = (elementOffset+1)%inpElements[inputGroup].length;
+			if(elementOffset==currOffset){break;}
+		}
+		addSessionAttribute(msg,"input_element_index",elementOffset);
+		formFillerSession.add('input_element_index',elementOffset);
+		highlightElement(inpElements[inputGroup][elementOffset],"green");
+		sendMessageToVop(msg,"Perform input on element number "+(elementOffset+1)+"?","Answer in a yes or no");
+	};
+	var inputReplyHandlers = [
+		{ name:"yes", handler:inputYesHandler },
+		{ name:"no", handler:inputNoHandler }
+	];
+	ElementPicker(msg,inpElements[inputGroup],"input_element_index","chooseInputIndex",formFillerSession,inputReplyHandlers,true,"green");
 	console.log("input ready on ");
 	console.log(inpElements[inputGroup][elementOffset]);
 	// Ask for input on a form. If out of input fields ask for next form, else wait for submit command.
