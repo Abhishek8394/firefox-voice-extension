@@ -5,7 +5,6 @@ var ctr = 0;
 
 // Maintain list of tabs that are already loaded, avoid loading content scripts twice.
 var initializedTabs = new InitializedTabsRegistry();
-
 // Handle initialization of newly created tab. 
 function createdTabHandler(tab){
 	// // for debugging -----
@@ -16,8 +15,12 @@ function createdTabHandler(tab){
 	// //  -------------------
 }
 // Handle initialization of updated tab. 
-function updatedTabHandler(tabId,changInfo,tab){
-	initializeTab(tab);	
+function updatedTabHandler(tabId,changeInfo,tab){
+	console.log(changeInfo);
+	// Init with scripts only after tab completely loaded.
+	if(changeInfo.status=="complete"){		
+		initializeTab(tab);	
+	}
 }
 
 //handle closing  of tabs
@@ -29,13 +32,23 @@ function removedTabHandler(tab){
 
 // Load Content scripts and other stuff to prepare for voice control
 function initializeTab(t){
-	if(!initializedTabs.hasTab(t)){		
+	console.log("init call on " + t.url);
+	// if(!initializedTabs.hasTab(t)){		
 		//TODO load content scripts
-		loadContentScripts(t);
-		initializedTabs.addEntry(t);
+		// Load scripts when you cannot establish connection to a tab's content scripts. This is to prevent
+		// loading multiple times in same tab.
+		var scriptExistanceChecker = browser.tabs.sendMessage(t.id,{eventType:"ping",msg:"ping"});
+		scriptExistanceChecker.then(function(response){
+			console.log(response);
+		},function(e){	
+			console.log(e);
+			console.log("loading scripts. in "+t.url);
+			loadContentScripts(t);
+			initializedTabs.addEntry(t);
+		});
 		// loadMainContentScript(t);	
 		// initializedTabs[t.id] = t;			
-	}
+	// }
 }
 
 function loadMainContentScript(tab){

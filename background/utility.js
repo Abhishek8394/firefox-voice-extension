@@ -31,7 +31,7 @@ InitializedTabsRegistry.prototype.hasTab = function(tab){
 	// if(this.registry[key]!=undefined){		
 	// 	console.log(domainUrlExtractor(this.registry[key].url) + " " + domainUrlExtractor(tab.url));
 	// }
-	 return this.registry[key]!=undefined && domainUrlExtractor(this.registry[key].url)==domainUrlExtractor(tab.url);
+	 return this.registry[key]!=undefined && (this.registry[key].url)==(tab.url);
 };
 
 //return domain Name from a url. Returns blank if not found

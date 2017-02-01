@@ -25,3 +25,12 @@ function addSessionAttribute(vopMsgRcvd,key,value){
 	vopMsgRcvd.getAllSessionAttributes()[key] = new SessionAttribute(key,value);
 	console.log(vopMsgRcvd.getAllSessionAttributes());
 }
+
+function pingHandler(msg){
+	if(msg.eventType=="ping"){
+		console.log("ping received");
+		return Promise.resolve({msg:"pong",from:document.getElementsByTagName("title")[0].innerText});
+	}
+}
+
+browser.runtime.onMessage.addListener(pingHandler);

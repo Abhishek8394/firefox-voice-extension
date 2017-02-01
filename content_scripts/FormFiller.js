@@ -78,8 +78,44 @@ function isLegitInput(element){
 	return false;
 }
 
+// Enter value in a form input. 
+function performFormInput(msg){
+	var form = formFillerSession.get('current_form');
+	var inputGroup = formFillerSession.get("input_group");
+	var elementOffset = formFillerSession.get("input_element_index");
+	var userInput = msg.getSlot("formInput")==undefined?undefined:msg.getSlot("formInput").value;
+	var inputElement = formFillerSession.get("current_input_field");
+	console.log(inputGroup);
+	console.log(elementOffset);
+	console.log(userInput);
+	console.log(inputElement);
+	inputElement.focus();
+	switch(inputGroup){
+		case "inputs":
+			inputElement.click();
+			userInput = userInput==undefined?inputElement.value:userInput;;
+			inputElement.value += userInput;
+			break;			
+		case "selects":
+			inputElement.click();
+			userInput = userInput==undefined?"0":userInput;
+			inputElement.options[parseInt(userInput)].selected=true;
+			break;
+		case "buttons":
+			userInput = userInput==undefined || userInput!="true"?false:true;
+			if(userInput)
+			{
+				inputElement.click();
+			}
+			break;
+	}
+	return true;
+}
+
 function formInputHandler(msg){
+	console.log("hello");
 	msg = new VopMessage(msg,undefined);
+	// check if a form decided for input
 	if(formFillerSession.get('current_form')==undefined){
 		pickForm(msg);
 		return;
@@ -87,10 +123,16 @@ function formInputHandler(msg){
 	console.log("all set to operate!");
 	var form = formFillerSession.get('current_form');
 	var inpElements = getInputElements(form);
+	var askForInput = true;
 	console.log(inpElements);
 	// loop through elements of chosen form.
 	// For separate treatment of inputs, selects and buttons
 	var inputGroup = formFillerSession.get("input_group");
+	var elementOffset = formFillerSession.get("input_element_index");
+	// If msg contains input for a input field.
+	if(msg.getSlot("formInput")!=undefined && formFillerSession.get("current_input_field")!=undefined){
+		askForInput = performFormInput(msg);
+	}
 	if(inputGroup==undefined){
 		// get first non empty input group
 		for(group of Object.keys(inpElements)){
@@ -101,33 +143,33 @@ function formInputHandler(msg){
 			}
 		}
 	}
-	// When asking to confirm a input element and user said yes
-	var elementOffset = formFillerSession.get("input_element_index");
+	
 	if(elementOffset==undefined){
 		console.log(inpElements[inputGroup]);
 		var tmpCtr = 0;
 		for(element of inpElements[inputGroup]){
 			if(isLegitInput(element)){				
 				elementOffset=tmpCtr;
-				formFillerSession.add("input_element_index",0);	
+				formFillerSession.add("input_element_index",elementOffset);	
 				highlightElement(inpElements[inputGroup][elementOffset],"green");	
 				break;
 			}
 			tmpCtr+=1;
 		}
 	}
+	// When asking to confirm a input element and user said yes
 	var inputYesHandler = function(msg,userReply){
 		var chosenInputField = inpElements[inputGroup][elementOffset];
 		console.log(chosenInputField);
 		formFillerSession.add("current_input_field",chosenInputField);		
 	};
 	// When asking to confirm a input Element and user says no
-	var inputNoHandler = function(msg,userReply){
+	var inputNoHandler = function(msg,userReply,movementDirection = 1){
 		unHighlightElement(inpElements[inputGroup][elementOffset]);
 		var currOffset = elementOffset;
-		elementOffset = (elementOffset+1)%inpElements[inputGroup].length;
+		elementOffset = (elementOffset+movementDirection)%inpElements[inputGroup].length;
 		while(!isLegitInput(inpElements[inputGroup][elementOffset])){
-			elementOffset = (elementOffset+1)%inpElements[inputGroup].length;
+			elementOffset = (elementOffset+movementDirection)%inpElements[inputGroup].length;
 			if(elementOffset==currOffset){break;}
 		}
 		addSessionAttribute(msg,"input_element_index",elementOffset);
@@ -135,11 +177,21 @@ function formInputHandler(msg){
 		highlightElement(inpElements[inputGroup][elementOffset],"green");
 		sendMessageToVop(msg,"Perform input on element number "+(elementOffset+1)+"?","Answer in a yes or no");
 	};
+	var inputPrevHandler = function(msg,userReply){
+		inputNoHandler(msg,userReply,-1);
+	};
+	var inputNextHandler = function(msg,userReply){
+		inputNoHandler(msg,userReply,1);
+	};
 	var inputReplyHandlers = [
 		{ name:"yes", handler:inputYesHandler },
-		{ name:"no", handler:inputNoHandler }
+		{ name:"no", handler:inputNoHandler },
+		{ name:"next", handler:inputNextHandler },
+		{ name:"previous", handler:inputPrevHandler }
 	];
-	ElementPicker(msg,inpElements[inputGroup],"input_element_index","chooseInputIndex",formFillerSession,inputReplyHandlers,true,"green");
+	if(askForInput){		
+		ElementPicker(msg,inpElements[inputGroup],"input_element_index","chooseInputIndex",formFillerSession,inputReplyHandlers,true,"green");
+	}
 	console.log("input ready on ");
 	console.log(inpElements[inputGroup][elementOffset]);
 	// Ask for input on a form. If out of input fields ask for next form, else wait for submit command.
