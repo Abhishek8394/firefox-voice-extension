@@ -24,10 +24,14 @@ function unHighlightElement(element){
 
 // Interact with user to decide on a option to choose. 
 // TODO cancel request, access by index number
-function ElementPicker(msg,elementList,currIndexKey,userReplySlotKey,sessionObject,expectedReplyHandlers,shouldHighlight=true,highlightColor="red"){
+function ElementPicker(msg,elementList,currIndexKey,userReplySlotKey,sessionObject,expectedReplyHandlers,shouldHighlight=true,highlightColor="red",promptText,reprompt){
 	// var forms = formFillerSession.get("all_forms");
 	var currIndex = sessionObject.get(currIndexKey);
 	var userReply = msg.getSlot(userReplySlotKey);
+	if(promptText==undefined){
+		promptText = "Perform input on element "+(currIndex+1)+"?";
+	}
+	reprompt=reprompt==undefined?promptText:reprompt;
 	// console.log(userChosenIndex);
 	if(userReply==undefined){
 		console.log("said nothing");
@@ -36,7 +40,7 @@ function ElementPicker(msg,elementList,currIndexKey,userReplySlotKey,sessionObje
 		if(shouldHighlight){			
 			highlightElement(elementList[currIndex],highlightColor);
 		}
-		sendMessageToVop(msg,"Perform input on element "+(currIndex+1)+"?","Answer in a yes or no");
+		sendMessageToVop(msg,promptText,reprompt);
 		return;
 	}
 	for(possibleReply of expectedReplyHandlers){
@@ -44,4 +48,38 @@ function ElementPicker(msg,elementList,currIndexKey,userReplySlotKey,sessionObje
 			possibleReply.handler(msg,userReply.value);
 		}
 	}
+}
+
+// If user is saying yes, no or something else.
+function isSayingYes(responseString){
+	responseString = responseString.trim().toLowerCase();
+	var positiveWords = ["yes","ok","true"];
+	var negativeWords = ["no","nope"];
+	for(i of positiveWords){
+		if(i==responseString){
+			return true;
+		}
+	}
+	for(i of negativeWords){
+		if(i==responseString){
+			return false;
+		}
+	}
+	return undefined;
+}
+
+function getPromptDisplayBanner(){
+	var banner = document.createElement("div");
+	banner.id="foxy-prompt";
+	banner.style.height =  "50%";
+	banner.style.position = "fixed";
+	banner.style.top="25%";
+	banner.style.left="25%";
+	banner.style.overflow="scroll";
+	banner.zIndex=1000;
+	banner.style.background="#FFF";
+	banner.style.borderRadius="5px";
+	banner.style.boxShadow="6px 6px 10px #333";
+	banner.style.padding="2%";
+	return banner;
 }
