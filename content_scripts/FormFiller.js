@@ -1,3 +1,5 @@
+//TODO handle navigation, scrolling, etc.
+
 var formFillerSession = new Session();
 const FormConstants={
 	// sessions keys
@@ -28,6 +30,7 @@ function selectElementsToggleDisplay(selectElement,show=true){
 	// console.log("new select");
 	var selectOptions = getPromptDisplayBanner();
 	var opts = [];
+	opts.push("<h4>Speak the number for the option you wish to select.</h4>")
 	var ctr=0;
 	for(option of selectElement.options){
 		opts.push("<span>"+ctr+": "+option.innerHTML+"</span><br>");
@@ -38,15 +41,35 @@ function selectElementsToggleDisplay(selectElement,show=true){
 	formFillerSession.add(FormConstants.SELECT_OPTIONS_DISPLAYER,selectOptions);
 }
 
+// See if a form can take input. To eliminate hidden forms
+function canFormInput(form){
+	var inpElements = getInputElements(form);
+	for(inp of inpElements){
+		if(isLegitInput(inp)){
+			return true;
+		}
+	}
+	return false;
+}
 // Get all forms in a page
 function captureAllForms(){
 	var forms = $('form:visible');
+	var validForms=[];
 	if(forms!=undefined && forms.length>0){
-		formFillerSession.add(FormConstants.ALL_FORMS_KEY,forms);
+		// Weed out forms that only have hidden elements.
+		for(var i=0;i<forms.length;i++){
+			if(canFormInput(forms[i])){
+				validForms.push(forms[i]);
+			}
+		}
+		formFillerSession.add(FormConstants.ALL_FORMS_KEY,validForms);
+	}
+	else{
+		return;
 	}
 	console.log(forms);
 	if(forms.length==1){
-		formFillerSession.add(FormConstants.CURR_FORM_KEY,forms[0]);
+		formFillerSession.add(FormConstants.CURR_FORM_KEY,validForms[0]);
 	}
 	formFillerSession.add(FormConstants.FORM_ASKING_KEY,0);
 }
@@ -83,12 +106,19 @@ function pickForm(msg){
 	var formCancelHandler = function(msg,userReply){
 		formNoHandler(msg,userReply,1);
 	};
+	var formSubmitHandler = function(msg,userReply){
+		var form = formFillerSession.get(FormConstants.CURR_FORM_KEY);
+		if(form!=undefined){
+			form.submit();
+		}
+	};
 	var formReplyHandlers = [
 		{name:"yes",handler:formYesHandler},
 		{name:"no",handler:formNoHandler},
 		{name:"next",handler:formNextHandler},
 		{name:"previous",handler:formPrevHandler},
-		{name:"cancel",handler:formCancelHandler}
+		{name:"cancel",handler:formCancelHandler},
+		{name:"submit",handler:formSubmitHandler}
 	];
 	ElementPicker(msg,forms,FormConstants.FORM_ASKING_KEY,
 		FormConstants.MSG_CHOSEN_FORM_INDEX,formFillerSession,formReplyHandlers,true,"red");
@@ -152,7 +182,7 @@ function performFormInput(msg){
 	inputElement.focus();
 	switch(inputElement.tagName){
 		case "INPUT":
-			userInput = userInput==undefined?inputElement.value:userInput;;
+			userInput = userInput==undefined?inputElement.value:userInput;
 			if(inputElement.type=="radio" || inputElement.type=="checkbox"){
 				if(userInput!=undefined && isSayingYes(userInput)==true){
 					inputElement.checked=true;
@@ -172,8 +202,7 @@ function performFormInput(msg){
 			inputElement.options[parseInt(userInput)].selected=true;
 			break;
 		case "BUTTON":
-			userInput = userInput==undefined || userInput!="true"?false:true;
-			if(userInput)
+			if(userInput!=undefined && isSayingYes(userInput)==true)
 			{
 				inputElement.click();
 			}
@@ -184,15 +213,12 @@ function performFormInput(msg){
 
 // Check if user issued a valid command for form navigation.
 function validFormNavigationRequest(msg){
-	var validRequests = ["yes","no","next","previous","cancel"];
+	var validRequests = ["yes","no","next","previous","cancel","submit"];
 	var userCommand = msg.getSlot(FormConstants.MSG_CHOSEN_FORM_INDEX);
 	if(userCommand!=null){
-		userCommand=userCommand.value.trim().toLowerCase();
-		for(req of validRequests){
-			if(req==userCommand){
-				console.log(userCommand);console.log(validRequests);
-				return true;
-			}
+		userCommand=userCommand.value;//.trim().toLowerCase();
+		if(isAValidCommand(validRequests,userCommand)){
+			return true;
 		}
 	}
 	return false;
@@ -225,7 +251,7 @@ function getPromptText(inputElement){
 
 
 function formInputHandler(msg){
-	// selectElementsToggleDisplay(document.getElementsByTagName("select")[0],true);
+	selectElementsToggleDisplay(document.getElementsByTagName("select")[0],true);
 	msg = new VopMessage(msg,undefined);
 	console.log(msg);
 	// check if a form decided for input

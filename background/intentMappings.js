@@ -31,7 +31,12 @@ const contentScriptsToLoad = [
 	"/background/vopInterface.js",
 	"/content_scripts/backendInterface.js",
 	"/content_scripts/contentUtility.js",
+	"/content_scripts/navigation.js",
 	"/browser_action/contentSample.js",
 	"/content_scripts/videoController.js",
 	"/content_scripts/FormFiller.js"
+];
+
+const cssToLoad = [
+	"/content_css/foxy.css"
 ];

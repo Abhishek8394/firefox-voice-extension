@@ -52,18 +52,14 @@ function ElementPicker(msg,elementList,currIndexKey,userReplySlotKey,sessionObje
 
 // If user is saying yes, no or something else.
 function isSayingYes(responseString){
-	responseString = responseString.trim().toLowerCase();
+	// responseString = responseString.trim().toLowerCase();
 	var positiveWords = ["yes","ok","true"];
 	var negativeWords = ["no","nope"];
-	for(i of positiveWords){
-		if(i==responseString){
-			return true;
-		}
+	if(isAValidCommand(positiveWords,responseString)){
+		return true;
 	}
-	for(i of negativeWords){
-		if(i==responseString){
-			return false;
-		}
+	if(isAValidCommand(negativeWords,responseString)){
+		return false;
 	}
 	return undefined;
 }
@@ -82,4 +78,14 @@ function getPromptDisplayBanner(){
 	banner.style.boxShadow="6px 6px 10px #333";
 	banner.style.padding="2%";
 	return banner;
+}
+
+function isAValidCommand(cmdList,userInput){
+	userInput = userInput.trim().toLowerCase();
+	for(cmd of cmdList){
+		if(cmd==userInput){
+			return true;
+		}
+	}
+	return false;
 }
