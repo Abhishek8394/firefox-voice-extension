@@ -21,7 +21,7 @@ function sendMessageToVop(vopMsgRcvd,outputText,repromptText,shouldEndSession=fa
 }
 
 function addSessionAttribute(vopMsgRcvd,key,value){
-	console.log(vopMsgRcvd.getAllSessionAttributes());
+	// console.log(vopMsgRcvd.getAllSessionAttributes());
 	vopMsgRcvd.getAllSessionAttributes()[key] = new SessionAttribute(key,value);
 	console.log(vopMsgRcvd.getAllSessionAttributes());
 }

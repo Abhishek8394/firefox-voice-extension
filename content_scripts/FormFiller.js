@@ -2,7 +2,7 @@
 
 var formFillerSession = new Session();
 const FormConstants={
-	// sessions keys
+	// local sessions keys
 	ALL_FORMS_KEY:"forms_all",
 	CURR_FORM_KEY:"current_form",
 	FORM_ASKING_KEY:"asking_form_index",
@@ -25,7 +25,7 @@ function selectElementsToggleDisplay(selectElement,show=true){
 			console.log("cached selct" + show);
 			formFillerSession.get(FormConstants.SELECT_OPTIONS_DISPLAYER).style.display=show?"block":"none";
 			if(show){
-				setGlobalScrollTarget(ormFillerSession.get(FormConstants.SELECT_OPTIONS_DISPLAYER));
+				setGlobalScrollTarget(formFillerSession.get(FormConstants.SELECT_OPTIONS_DISPLAYER));
 			}
 		}
 		return;

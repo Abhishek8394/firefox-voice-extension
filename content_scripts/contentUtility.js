@@ -115,4 +115,22 @@ function isAValidCommand(cmdList,userInput){
 	return false;
 }
 
+function getMsgSlotValue(msg,key){
+	var val = msg.getSlot(key);
+	val = val==undefined?undefined:val.value;
+	return val;
+}
+
+// Find the innermost text elements as an array.
+function getInnerMostText(element){
+	var inText=[];
+	if(element.children.length==0){
+		return [element.innerText];
+	}
+	for(c of element.children){
+		inText.push(getInnerMostText(c));
+	}
+	return inText;
+}
+
 globalInit();
