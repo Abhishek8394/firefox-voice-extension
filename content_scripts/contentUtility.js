@@ -167,5 +167,55 @@ function getInnerMostText(element){
 	}
 	return inText;
 }
+// Get extension of page file name
+function getPageFileExtension(){
+	var url = document.location+"";
+	var extension = url.split("#");
+	// console.log(extension);
+	extension = extension[0].split("?");
+	// console.log(extension);
+	extension = extension[0].split("/");
+	// console.log(extension);
+	extension = getFirstNonEmpty(extension,false);
+	extension = extension.split(".");
+	extension = getFirstNonEmpty(extension,false);
+	// extension = extension[extension.length-1];
+	// extension = tmp;
+	console.log(extension);
+	return extension;
+}
+
+// return a non empty, non undefined element.
+function getFirstNonEmpty(arr,fromBeginning=true){
+	var st = fromBeginning?0:arr.length-1;
+	var end = fromBeginning?arr.length-1:0;
+	var inc = fromBeginning?1:-1;
+	var shouldContinueLoop = function(i,end){
+		if(fromBeginning){return i<=end};
+		return i>=end;
+	};
+	for(var i=st;shouldContinueLoop(i,end);i+=inc){
+		if(arr[i]!=undefined && arr[i].trim()!=""){
+			return arr[i];
+		}
+	}
+	return undefined;
+}
+//check if current page is a pdf. Done solely based on extension.
+function isAPDF(){
+	var extension = getPageFileExtension();
+	if(isAValidCommand(["pdf"],extension)){
+		return true;
+	}
+	return false;
+}
+
+// Get an event that simulates pressing of key represented by keyCode. 
+function getKeyPress(keyCode){
+	var e = jQuery.Event("keypress");
+	e.which = keyCode;
+	e.keyCode = keyCode;
+	return e;
+}
 
 globalInit();

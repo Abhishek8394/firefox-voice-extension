@@ -1,11 +1,12 @@
 var navSession = new Session();
 const NavConstants = {
-	LINKS_LIST_KEY:"list_of_links",
-	BASIC_SCROLL_KEY : "basicScroll",
-	LINK_KEY : "hyperlink",
-	BROWSER_NAV_KEY : "browserNav",
-	MSG_SESSION_LINK_INDEX_KEY : "nav_hyperlink_index",
-	USER_REPLY_KEY : "navReply"
+	LINKS_LIST_KEY:"list_of_links",	// local session
+	BASIC_SCROLL_KEY : "basicScroll", // user slot
+	LINK_KEY : "hyperlink", // user slot
+	BROWSER_NAV_KEY : "browserNav", // user slot
+	MSG_SESSION_LINK_INDEX_KEY : "nav_hyperlink_index", // user session
+	USER_REPLY_KEY : "navReply", // user slot
+	PDF_NAV_KEY:"pdfNav" // user slot
 };
 var NavManager = function(){
 	this.defaultScrollX = 100;
@@ -79,7 +80,7 @@ NavManager.prototype.clickLink = function(msg,link){
 			var linkDisplayText = getInnerMostText(i);
 			// Some links have useful info in title
 			if(i.attributes.title!=undefined){
-				linkDisplayText.push(i.attributes.title);
+				linkDisplayText.push(i.attributes.title.value);
 			}
 			linkDisplayText = linkDisplayText.join(" ");
 			if(userQuery.test(linkDisplayText)){
@@ -103,7 +104,11 @@ NavManager.prototype.clickLink = function(msg,link){
 			candidates = navSession.get(NavConstants.LINKS_LIST_KEY);
 		}
 	}
-	if(candidates.length>0){		
+	if(candidates.length>0){	
+		if(candidates.length==1){
+			candidates[0].click();
+			return;
+		}	
 		var handlers = this.clickHandlersGenerator();
 		ElementPicker2(msg,candidates,NavConstants.MSG_SESSION_LINK_INDEX_KEY,NavConstants.USER_REPLY_KEY,
 			handlers,"Click on this link?","Answer in yes or no",
@@ -154,6 +159,42 @@ NavManager.prototype.handleBrowserNavigation = function(msg,userInput){
 	}
 };
 
+NavManager.prototype.setupScrollForPdf = function(){
+	// CHange scroll target only if it is a pdf and scroll target is a window.
+	// Check for window to prevent overriding custom targets.
+	if(isAPDF() && globalSession.get(globalConstants.SCROLL_TARGET)==window){
+		var elementScrollsPDF = document.getElementById("viewerContainer");
+		setGlobalScrollTarget(elementScrollsPDF);
+	}
+};
+
+// Navigation command when viewing a pdf.
+NavManager.prototype.pdfNavHandler = function(msg,pdfNav){
+	var nextCommands=["next"];
+	var previousCommands = ["prev","previous","back"];
+	var pageNum = -1;
+	try{
+		pageNum = parseInt(pdfNav.trim());
+	}catch(e){pageNum=-1;}
+	if(isAValidCommand(nextCommands,pdfNav)){
+		$('#next').click();
+	}
+	else if(isAValidCommand(previousCommands,pdfNav)){
+		$('#previous').click();
+	}
+	else if(pageNum>=0){
+		var pageField = document.getElementById('pageContainer'+pageNum);
+		var foo=$('#pageContainer'+pageNum);
+		var viewerContainer = document.getElementById("viewerContainer");
+		if(pageField==undefined || viewerContainer==undefined){
+			console.log("target fields not found");
+			return;
+		}
+		viewerContainer.scrollTo(pageField.offsetLeft - pageField.scrollLeft,pageField.offsetTop - pageField.scrollTop);
+		console.log(pageField);
+	}
+};
+
 function navHandler(msg){
 	console.log(isActiveTab());
 	if(!isActiveTab()){
@@ -165,16 +206,25 @@ function navHandler(msg){
 	var link = getMsgSlotValue(msg,NavConstants.LINK_KEY);
 	var browserNav = getMsgSlotValue(msg,NavConstants.BROWSER_NAV_KEY);
 	var userReply = getMsgSlotValue(msg,NavConstants.USER_REPLY_KEY);
+	var pdfNav = getMsgSlotValue(msg,NavConstants.PDF_NAV_KEY);
+	// forward backward in history
 	if(browserNav!=undefined){
 		navMan.handleBrowserNavigation(msg,browserNav);
 		return;	
 	}
+	// scrolling.
 	if(action!=undefined){
-		// is a scroll command.
+		// setup scrolling for pdf
+		navMan.setupScrollForPdf();
 		navMan.handleScroll(msg,action);
 	}
+	// Click on a link
 	if(link!=undefined || userReply!=undefined){
 		navMan.clickLink(msg,link);
+	}
+	// nav command for pdf
+	if(pdfNav!=undefined && isAPDF()){
+		navMan.pdfNavHandler(msg,pdfNav);
 	}
 };
 router.registerRoute("nav_intent",navHandler);
