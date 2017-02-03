@@ -40,6 +40,10 @@ function initializeTab(t){
 		var scriptExistanceChecker = browser.tabs.sendMessage(t.id,{eventType:"ping",msg:"ping"});
 		scriptExistanceChecker.then(function(response){
 			console.log(response);
+			if(response==undefined){
+				loadContentScripts(t);
+				initializedTabs.addEntry(t);
+			}
 		},function(e){	
 			console.log(e);
 			console.log("loading scripts. in "+t.url);
