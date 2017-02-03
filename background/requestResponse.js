@@ -71,6 +71,13 @@ VopMessage.prototype.getSessionAttribute = function(key){
 	return tmp==undefined?undefined:tmp.value;
 };
 
+VopMessage.prototype.removeSessionAttribute = function(key){
+	if(key==undefined || this.getAllSessionAttributes[key]==undefined){
+		return;
+	}
+	delete this.getAllSessionAttributes[key];
+};
+
 VopMessage.prototype.isNewSession = function(){
 	return this.getSession().isNew;
 };

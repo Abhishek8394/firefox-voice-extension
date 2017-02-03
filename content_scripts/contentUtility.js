@@ -23,7 +23,7 @@ function isActiveTab(){
 
 
 
-function highlightElement(element,highlightColor="red"){
+function highlightElement(element,highlightColor="red",shouldCenterOn = true){
 	// console.log(element.position());
 	// var highLighter = document.createElement("div");
 	// highLighter.style.position = "absolute";
@@ -36,6 +36,9 @@ function highlightElement(element,highlightColor="red"){
 	// element.appendChild(highLighter);
 	var oldBorder = element.style.border;
 	element.style.border = "3px solid "+highlightColor;
+	if(shouldCenterOn){		
+		window.scrollTo($(element).position().left,$(element).position().top);	
+	}
 	return oldBorder;
 }
 
@@ -62,7 +65,7 @@ function ElementPicker(msg,elementList,currIndexKey,userReplySlotKey,sessionObje
 		console.log("said nothing");
 		addSessionAttribute(msg,"asking_option",currIndex);
 		sessionObject.add(currIndexKey,currIndex);
-		if(shouldHighlight){			
+		if(shouldHighlight){		
 			highlightElement(elementList[currIndex],highlightColor);
 		}
 		sendMessageToVop(msg,promptText,reprompt);
@@ -71,10 +74,42 @@ function ElementPicker(msg,elementList,currIndexKey,userReplySlotKey,sessionObje
 	for(possibleReply of expectedReplyHandlers){
 		if(possibleReply.name == userReply.value){
 			possibleReply.handler(msg,userReply.value);
+			break;
 		}
 	}
 }
 
+// Interact with user to decide on a option to choose. 
+// TODO cancel request, access by index number.
+// Currently serves just first one matching response handler. Makes sense and saves resources.
+function ElementPicker2(msg,elementList,currIndexKey,userReplySlotKey,expectedReplyHandlers,promptText,reprompt,shouldHighlight=true,highlightColor="red"){
+	// var forms = formFillerSession.get("all_forms");
+	var currIndex = msg.getSessionAttribute(currIndexKey);
+	console.log(currIndex);
+	currIndex = currIndex==undefined?0:parseInt(currIndex);
+	var userReply = msg.getSlot(userReplySlotKey);
+	if(promptText==undefined){
+		promptText = "Perform input on element "+(currIndex+1)+"?";
+	}
+	reprompt=reprompt==undefined?promptText:reprompt;
+	// console.log(userChosenIndex);
+	if(userReply==undefined){
+		console.log("said nothing");
+		addSessionAttribute(msg,currIndexKey,currIndex);
+		// sessionObject.add(currIndexKey,currIndex);
+		if(shouldHighlight){		
+			highlightElement(elementList[currIndex],highlightColor);
+		}
+		sendMessageToVop(msg,promptText,reprompt);
+		return;
+	}
+	for(possibleReply of expectedReplyHandlers){
+		if(isAValidCommand(possibleReply.name,userReply.value)){
+			possibleReply.handler(msg,elementList,currIndex,userReply.value);
+			break;
+		}
+	}
+}
 // If user is saying yes, no or something else.
 function isSayingYes(responseString){
 	// responseString = responseString.trim().toLowerCase();

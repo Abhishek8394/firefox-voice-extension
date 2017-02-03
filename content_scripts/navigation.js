@@ -1,7 +1,13 @@
+var navSession = new Session();
+const NavConstants = {
+	LINKS_LIST_KEY:"list_of_links",
+	BASIC_SCROLL_KEY : "basicScroll",
+	LINK_KEY : "hyperlink",
+	BROWSER_NAV_KEY : "browserNav",
+	MSG_SESSION_LINK_INDEX_KEY : "nav_hyperlink_index",
+	USER_REPLY_KEY : "navReply"
+};
 var NavManager = function(){
-	this.BASIC_SCROLL_KEY = "basicScroll";
-	this.LINK_KEY = "hyperlink";
-	this.BROWSER_NAV_KEY = "browserNav";
 	this.defaultScrollX = 100;
 	this.defaultScrollY = 100;
 	this.hyperlinks=undefined;
@@ -66,23 +72,73 @@ NavManager.prototype.scroller = function(xDir,yDir,xVal=undefined,yVal=undefined
 // Click on a link
 NavManager.prototype.clickLink = function(msg,link){
 	var ahrefs = document.getElementsByTagName("a");
-	var userQuery = new RegExp(link.trim(),"i");
 	var candidates=[];
-	for(i of ahrefs){
-		var linkDisplayText = getInnerMostText(i);
-		// Some links have useful info in title
-		if(i.attributes.title!=undefined){
-			linkDisplayText.push(i.attributes.title);
+	if(link!=undefined){		
+		var userQuery = new RegExp(link.trim(),"i");
+		for(i of ahrefs){
+			var linkDisplayText = getInnerMostText(i);
+			// Some links have useful info in title
+			if(i.attributes.title!=undefined){
+				linkDisplayText.push(i.attributes.title);
+			}
+			linkDisplayText = linkDisplayText.join(" ");
+			if(userQuery.test(linkDisplayText)){
+				candidates.push(i);
+			}
 		}
-		linkDisplayText = linkDisplayText.join(" ");
-		if(userQuery.test(linkDisplayText)){
-			candidates.push(i);
+		for(c of candidates){
+			highlightElement(c,"orange");
+		}
+		var prevSet = navSession.get(NavConstants.LINKS_LIST_KEY);
+		if(prevSet!=undefined){
+			for(i of prevSet){
+				unHighlightElement(i);
+			}
+		}
+		navSession.add(NavConstants.LINKS_LIST_KEY,candidates);
+		msg.removeSessionAttribute(NavConstants.MSG_SESSION_LINK_INDEX_KEY);
+	}
+	else{
+		if(navSession.get(NavConstants.LINKS_LIST_KEY)!=undefined){
+			candidates = navSession.get(NavConstants.LINKS_LIST_KEY);
 		}
 	}
-	for(c of candidates){
-		highlightElement(c,"orange");
+	if(candidates.length>0){		
+		var handlers = this.clickHandlersGenerator();
+		ElementPicker2(msg,candidates,NavConstants.MSG_SESSION_LINK_INDEX_KEY,NavConstants.USER_REPLY_KEY,
+			handlers,"Click on this link?","Answer in yes or no",
+			shouldHighlight=true,highlightColor="green");
 	}
-	candidates[0].click();
+};
+NavManager.prototype.clickHandlersGenerator = function(){
+	var handlers = [];
+	var noResponses = ["no","nope"];
+	var cancelResponses = ["cancel"];
+	var yesResponses = ["yes","click","yep","yeah"];
+	var noHandler = function(msg,elementList,currIndex,userReply,direction=1){
+		highlightElement(elementList[currIndex],"orange",false);
+		currIndex = (currIndex + (direction*1))%elementList.length;
+		console.log(currIndex);
+		highlightElement(elementList[currIndex],"green");
+		addSessionAttribute(msg,NavConstants.MSG_SESSION_LINK_INDEX_KEY,currIndex);
+		console.log(msg);
+		sendMessageToVop(msg,"Click on this link?","Answer in a yes or no");
+	};
+	var cancelHandler = function(msg,elementList,currIndex,userReply){
+		for(i of elementList){
+			unHighlightElement(i);
+		}
+		msg.removeSessionAttribute(NavConstants.MSG_SESSION_LINK_INDEX_KEY);
+		sendMessageToVop(msg,"ok","ok");
+	};
+	var yesHandler = function(msg,elementList,currIndex,userReply){
+		cancelHandler(msg,elementList,currIndex,userReply);
+		elementList[currIndex].click();
+	};
+	handlers.push({name:noResponses,handler:noHandler});
+	handlers.push({name:cancelResponses,handler:cancelHandler});
+	handlers.push({name:yesResponses,handler:yesHandler});
+	return handlers;
 };
 
 NavManager.prototype.handleBrowserNavigation = function(msg,userInput){
@@ -105,9 +161,10 @@ function navHandler(msg){
 	}
 	var navMan = new NavManager(); 
 	msg = new VopMessage(msg,undefined);
-	var action = getMsgSlotValue(msg,navMan.BASIC_SCROLL_KEY);
-	var link = getMsgSlotValue(msg,navMan.LINK_KEY);
-	var browserNav = getMsgSlotValue(msg,navMan.BROWSER_NAV_KEY);
+	var action = getMsgSlotValue(msg,NavConstants.BASIC_SCROLL_KEY);
+	var link = getMsgSlotValue(msg,NavConstants.LINK_KEY);
+	var browserNav = getMsgSlotValue(msg,NavConstants.BROWSER_NAV_KEY);
+	var userReply = getMsgSlotValue(msg,NavConstants.USER_REPLY_KEY);
 	if(browserNav!=undefined){
 		navMan.handleBrowserNavigation(msg,browserNav);
 		return;	
@@ -116,7 +173,7 @@ function navHandler(msg){
 		// is a scroll command.
 		navMan.handleScroll(msg,action);
 	}
-	if(link!=undefined){
+	if(link!=undefined || userReply!=undefined){
 		navMan.clickLink(msg,link);
 	}
 };
