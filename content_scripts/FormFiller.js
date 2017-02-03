@@ -22,23 +22,29 @@ const FormConstants={
 function selectElementsToggleDisplay(selectElement,show=true){
 	if(selectElement==undefined){
 		if(formFillerSession.get(FormConstants.SELECT_OPTIONS_DISPLAYER)!=undefined){
-			// console.log("cached selct");
+			console.log("cached selct" + show);
 			formFillerSession.get(FormConstants.SELECT_OPTIONS_DISPLAYER).style.display=show?"block":"none";
+			if(show){
+				setGlobalScrollTarget(ormFillerSession.get(FormConstants.SELECT_OPTIONS_DISPLAYER));
+			}
 		}
 		return;
 	}
-	// console.log("new select");
-	var selectOptions = getPromptDisplayBanner();
-	var opts = [];
-	opts.push("<h4>Speak the number for the option you wish to select.</h4>")
-	var ctr=0;
-	for(option of selectElement.options){
-		opts.push("<span>"+ctr+": "+option.innerHTML+"</span><br>");
-		ctr+=1;
+	else{		
+		console.log("new select");
+		var selectOptions = getPromptDisplayBanner();
+		var opts = [];
+		opts.push("<h4>Speak the number for the option you wish to select.</h4>")
+		var ctr=0;
+		for(option of selectElement.options){
+			opts.push("<span>"+ctr+": "+option.innerHTML+"</span><br>");
+			ctr+=1;
+		}
+		selectOptions.innerHTML += opts.join("");
+		document.getElementsByTagName("body")[0].appendChild(selectOptions);
+		formFillerSession.add(FormConstants.SELECT_OPTIONS_DISPLAYER,selectOptions);
+		setGlobalScrollTarget(selectOptions);
 	}
-	selectOptions.innerHTML = opts.join("");
-	document.getElementsByTagName("body")[0].appendChild(selectOptions);
-	formFillerSession.add(FormConstants.SELECT_OPTIONS_DISPLAYER,selectOptions);
 }
 
 // See if a form can take input. To eliminate hidden forms
@@ -200,6 +206,7 @@ function performFormInput(msg){
 			inputElement.click();
 			userInput = userInput==undefined?"0":userInput;
 			inputElement.options[parseInt(userInput)].selected=true;
+			resetGlobalScrollTarget();
 			break;
 		case "BUTTON":
 			if(userInput!=undefined && isSayingYes(userInput)==true)
@@ -249,10 +256,29 @@ function getPromptText(inputElement){
 	return promptText;
 }
 
+// check if user asked to close the <select> options displayer.
+// function cancellingSelectDisplay(msg){
+// 	var selectHelper = formFillerSession.get(FormConstants.SELECT_OPTIONS_DISPLAYER);
+// 	if(selectHelper!=undefined){
+// 		var userInput = msg.getSlot(FormConstants.MSG_USER_INPUT);
+// 		userInput=userInput==undefined?undefined:userInput.value;
+// 		var cancelWords = ["cancel","close"];
+// 		if(isAValidCommand(cancelWords,userInput)){
+// 			return true;
+// 		}
+// 	}
+// 	return false;
+// }
 
 function formInputHandler(msg){
-	selectElementsToggleDisplay(document.getElementsByTagName("select")[0],true);
+	if(!isActiveTab()){
+		return;
+	}
+	// selectElementsToggleDisplay(document.getElementsByTagName("select")[0],true);
 	msg = new VopMessage(msg,undefined);
+	// if(cancellingSelectDisplay(msg)){
+	// 	selectElementsToggleDisplay(undefined,false);
+	// }
 	console.log(msg);
 	// check if a form decided for input
 	if(formFillerSession.get(FormConstants.CURR_FORM_KEY)==undefined || validFormNavigationRequest(msg)){

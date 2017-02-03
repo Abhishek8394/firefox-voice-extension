@@ -1,3 +1,28 @@
+// For sharing data among scripts.
+var globalSession = new Session();
+
+const globalConstants = {
+	SCROLL_TARGET:"scrolling_target"
+};
+
+function globalInit(){
+	globalSession.add(globalConstants.SCROLL_TARGET,window);
+}
+
+function resetGlobalScrollTarget(){
+	globalSession.add(globalConstants.SCROLL_TARGET,window);	
+}
+
+function setGlobalScrollTarget(element){
+	globalSession.add(globalConstants.SCROLL_TARGET,element);
+}
+
+function isActiveTab(){
+	return !document.hidden;
+}
+
+
+
 function highlightElement(element,highlightColor="red"){
 	// console.log(element.position());
 	// var highLighter = document.createElement("div");
@@ -67,7 +92,7 @@ function isSayingYes(responseString){
 function getPromptDisplayBanner(){
 	var banner = document.createElement("div");
 	banner.id="foxy-prompt";
-	banner.style.height =  "50%";
+	banner.style.height =  "40%";
 	banner.style.position = "fixed";
 	banner.style.top="25%";
 	banner.style.left="25%";
@@ -76,7 +101,7 @@ function getPromptDisplayBanner(){
 	banner.style.background="#FFF";
 	banner.style.borderRadius="5px";
 	banner.style.boxShadow="6px 6px 10px #333";
-	banner.style.padding="2%";
+	banner.style.padding="2%";	
 	return banner;
 }
 
@@ -89,3 +114,5 @@ function isAValidCommand(cmdList,userInput){
 	}
 	return false;
 }
+
+globalInit();

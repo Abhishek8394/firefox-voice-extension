@@ -53,11 +53,17 @@ NavManager.prototype.isScrollRightCommand = function(action) {
 NavManager.prototype.scroller = function(xDir,yDir,xVal=undefined,yVal=undefined){
 	xVal = xVal==undefined?this.defaultScrollX:xVal;
 	yVal = yVal==undefined?this.defaultScrollY:yVal;
-	var newScrollX = window.scrollX + xDir*xVal;
-	var newScrollY = window.scrollY + yDir*yVal;
-	window.scrollTo(newScrollY,newScrollY);
+	var newScrollX = xDir*xVal;
+	var newScrollY = yDir*yVal;
+	var scrollTarget = globalSession.get(globalConstants.SCROLL_TARGET);
+	console.log(scrollTarget);
+	scrollTarget.scrollBy(newScrollY,newScrollY);
 };
 function navHandler(msg){
+	console.log(isActiveTab());
+	if(!isActiveTab()){
+		return;
+	}
 	var navMan = new NavManager(); 
 	msg = new VopMessage(msg,undefined);
 	var action = msg.getSlot(navMan.BASIC_SCROLL_KEY);

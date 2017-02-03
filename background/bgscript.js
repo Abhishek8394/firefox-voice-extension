@@ -78,10 +78,10 @@ function broadCastAll(msg){
 }
 function broadcastToContentScripts(msg){
 	var browserTabQuery={};
-	if(msg.getIntentName()==FORM_FILLER_INTENT){
-		console.log("viola!");
-		browserTabQuery = {currentWindow:true,active:true};
-	}
+	// if(msg.getIntentName()==FORM_FILLER_INTENT){
+	// 	console.log("viola!");
+	// 	browserTabQuery = {currentWindow:true,active:true};
+	// }
 	var tablist = browser.tabs.query(browserTabQuery);
 	tablist.then(function(tabs){
 		for(f of tabs){
