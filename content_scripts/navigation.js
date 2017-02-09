@@ -6,7 +6,8 @@ const NavConstants = {
 	BROWSER_NAV_KEY : "browserNav", // user slot
 	MSG_SESSION_LINK_INDEX_KEY : "nav_hyperlink_index", // user session
 	USER_REPLY_KEY : "navReply", // user slot
-	PDF_NAV_KEY:"pdfNav" // user slot
+	PDF_NAV_KEY:"pdfNav", // user slot
+	PDF_NAV_PGNUM_KEY:"pdfNavToPage"
 };
 var NavManager = function(){
 	this.defaultScrollX = 100;
@@ -206,7 +207,7 @@ function navHandler(msg){
 	var link = getMsgSlotValue(msg,NavConstants.LINK_KEY);
 	var browserNav = getMsgSlotValue(msg,NavConstants.BROWSER_NAV_KEY);
 	var userReply = getMsgSlotValue(msg,NavConstants.USER_REPLY_KEY);
-	var pdfNav = getMsgSlotValue(msg,NavConstants.PDF_NAV_KEY);
+	var pdfNav = getMsgSlotValue(msg,NavConstants.PDF_NAV_KEY) || getMsgSlotValue(msg,NavConstants.PDF_NAV_PGNUM_KEY);
 	// forward backward in history
 	if(browserNav!=undefined){
 		navMan.handleBrowserNavigation(msg,browserNav);
