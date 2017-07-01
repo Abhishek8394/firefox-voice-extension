@@ -12,8 +12,8 @@ const FormConstants={
 	INPUT_ACTIVE_KEY:"current_input_field",
 	SELECT_OPTIONS_DISPLAYER:"select_options_displayer",
 	// user request keys
-	MSG_CHOSEN_FORM_INDEX:"chooseFormIndex",
-	MSG_CHOSEN_INPUT_INDEX:"chooseInputIndex",
+	MSG_CHOSEN_FORM_INDEX:"formInput",
+	MSG_CHOSEN_INPUT_INDEX:"formInput",
 	MSG_USER_INPUT:"formInput"
 };
 

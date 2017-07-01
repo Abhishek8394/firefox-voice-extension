@@ -72,6 +72,7 @@ function loadContentScripts(tab){
 			// console.log("successfully injected "+cs+" in "+tab.id);
 		},function(e){
 			console.log("error injecting script "+cs+" in " + tab.id);
+			// console.log(e);
 		});
 	}
 }
@@ -89,7 +90,11 @@ function broadcastToContentScripts(msg){
 	var tablist = browser.tabs.query(browserTabQuery);
 	tablist.then(function(tabs){
 		for(f of tabs){
-			browser.tabs.sendMessage(f.id,msg.getFormattedForContentScript());
+			var f = browser.tabs.sendMessage(f.id,msg.getFormattedForContentScript());
+			f.then().catch(function(e){
+				console.log("error transmitting to content script");
+				console.log(e);
+			});
 		}
 	},tabQueryErrorHandler);
 }
@@ -108,6 +113,7 @@ function tabQueryHandler(tabs){
 
 //Error handler for tabs.query
 function tabQueryErrorHandler(e){
+	console.log("tab query error");
 	console.log(e);
 }
 
