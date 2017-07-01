@@ -119,12 +119,12 @@ function pickForm(msg){
 		}
 	};
 	var formReplyHandlers = [
-		{name:"yes",handler:formYesHandler},
-		{name:"no",handler:formNoHandler},
+		{name:"yes",handler:formYesHandler, keywords:['yes', 'yep', 'yay']},
+		{name:"no",handler:formNoHandler, keywords:['no','nope']},
 		{name:"next",handler:formNextHandler},
 		{name:"previous",handler:formPrevHandler},
-		{name:"cancel",handler:formCancelHandler},
-		{name:"submit",handler:formSubmitHandler}
+		{name:"cancel",handler:formCancelHandler, keywords:['cancel','abort']},
+		{name:"submit",handler:formSubmitHandler, keywords:['submit','go']}
 	];
 	ElementPicker(msg,forms,FormConstants.FORM_ASKING_KEY,
 		FormConstants.MSG_CHOSEN_FORM_INDEX,formFillerSession,formReplyHandlers,true,"red");

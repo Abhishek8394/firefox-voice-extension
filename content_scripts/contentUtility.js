@@ -61,22 +61,24 @@ function ElementPicker(msg,elementList,currIndexKey,userReplySlotKey,sessionObje
 	}
 	reprompt=reprompt==undefined?promptText:reprompt;
 	// console.log(userChosenIndex);
-	if(userReply==undefined){
-		console.log("said nothing");
-		addSessionAttribute(msg,"asking_option",currIndex);
-		sessionObject.add(currIndexKey,currIndex);
-		if(shouldHighlight){		
-			highlightElement(elementList[currIndex],highlightColor);
-		}
-		sendMessageToVop(msg,promptText,reprompt);
-		return;
+	if(userReply!=undefined){
+		for(possibleReply of expectedReplyHandlers){
+			if(possibleReply.name == userReply.value || (possibleReply.keywords!=null && isAValidCommand(possibleReply.keywords,userReply.value))){
+				possibleReply.handler(msg,userReply.value);
+				return;
+			}
+		}		
 	}
-	for(possibleReply of expectedReplyHandlers){
-		if(possibleReply.name == userReply.value){
-			possibleReply.handler(msg,userReply.value);
-			break;
-		}
+	// user didnt say anything or said something invalid.
+	console.log("said nothing");
+	addSessionAttribute(msg,"asking_option",currIndex);
+	sessionObject.add(currIndexKey,currIndex);
+	if(shouldHighlight){		
+		highlightElement(elementList[currIndex],highlightColor);
 	}
+	sendMessageToVop(msg,promptText,reprompt);
+	return;
+	
 }
 
 // Interact with user to decide on a option to choose. 
