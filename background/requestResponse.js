@@ -126,6 +126,10 @@ VopMessage.prototype.getSlot = function(key){
 	return this.getAllSlots()[key];
 };
 
+VopMessage.prototype.addSlot = function(key,slot){
+	this.request.intent.slots[key] = slot;
+};
+
 // For uncloneable error when passing vopmessage to content script
 VopMessage.prototype.getFormattedForContentScript = function(){
 	return {

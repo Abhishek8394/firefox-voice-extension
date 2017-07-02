@@ -2,6 +2,7 @@
 
 var formFillerSession = new Session();
 const FormConstants={
+	PRIMARY_INTENT_NAME :"form_intent",
 	// local sessions keys
 	ALL_FORMS_KEY:"forms_all",
 	CURR_FORM_KEY:"current_form",
@@ -14,7 +15,10 @@ const FormConstants={
 	// user request keys
 	MSG_CHOSEN_FORM_INDEX:"formCommand",
 	MSG_CHOSEN_INPUT_INDEX:"formCommand",
-	MSG_USER_INPUT:"formInput"
+	MSG_USER_INPUT:"formInput",
+
+	// variables expecting a yes/no response 
+	YES_NO_VARS: ["MSG_CHOSEN_INPUT_INDEX", "MSG_CHOSEN_FORM_INDEX"]
 };
 
 // This function displays a list on screen.
@@ -270,6 +274,7 @@ function getPromptText(inputElement){
 // 	return false;
 // }
 
+
 function formInputHandler(msg){
 	if(!isActiveTab()){
 		return;
@@ -280,6 +285,7 @@ function formInputHandler(msg){
 	// 	selectElementsToggleDisplay(undefined,false);
 	// }
 	console.log(msg);
+	addSessionAttribute(msg, globalConstants.ASKER_KEY, FormConstants.PRIMARY_INTENT_NAME);
 	// check if a form decided for input
 	if(formFillerSession.get(FormConstants.CURR_FORM_KEY)==undefined || validFormNavigationRequest(msg)){
 		console.log("on form "+formFillerSession.get(FormConstants.CURR_FORM_KEY));
@@ -365,7 +371,7 @@ function formInputHandler(msg){
 		{ name:"previous", handler:inputPrevHandler, keywords: globalConstants.PREV_KEYWORDS }
 	];
 	if(askForInput){	
-		var promptText = getPromptText(inpElements[elementOffset]);
+		var promptText = getPromptText(inpElements[elementOffset]);		
 		ElementPicker(msg,inpElements,FormConstants.INPUT_OFFSET_KEY,FormConstants.MSG_CHOSEN_INPUT_INDEX,formFillerSession,inputReplyHandlers,true,"green",promptText);
 	}
 	console.log("input ready on ");
@@ -373,7 +379,22 @@ function formInputHandler(msg){
 	// Ask for input on a form. If out of input fields ask for next form, else wait for submit command.
 }
 
+// handle yes or no messages from user.
+function formResponseHandler(msg){
+	msg = new VopMessage(msg, undefined);
+	// the form wasn't looking for a response.
+	if(msg.getSessionAttribute(globalConstants.ASKER_KEY).toLowerCase()!=FormConstants.PRIMARY_INTENT_NAME){
+		return;
+	}
+	console.log("form handler");
+	for(s of FormConstants.YES_NO_VARS){
+		msg.addSlot(FormConstants[s], msg.getSlot("userResponse"));
+	}
+	formInputHandler(msg);
+}
+
 $('ready',function(){
 	captureAllForms();
 	router.registerRoute("form_input",formInputHandler);
+	router.registerRoute("respond_intent", formResponseHandler);
 });

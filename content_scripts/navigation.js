@@ -1,5 +1,6 @@
 var navSession = new Session();
 const NavConstants = {
+	PRIMARY_INTENT_NAME :"nav_intent",
 	LINKS_LIST_KEY:"list_of_links",	// local session
 	BASIC_SCROLL_KEY : "basicScroll", // user slot
 	LINK_KEY : "hyperlink", // user slot
@@ -7,7 +8,9 @@ const NavConstants = {
 	MSG_SESSION_LINK_INDEX_KEY : "nav_hyperlink_index", // user session
 	USER_REPLY_KEY : "navReply", // user slot
 	PDF_NAV_KEY:"pdfNav", // user slot
-	PDF_NAV_PGNUM_KEY:"pdfNavToPage"
+	PDF_NAV_PGNUM_KEY:"pdfNavToPage",
+	// vars that expect a yes or no from users.
+	YES_NO_VARS:["USER_REPLY_KEY"]
 };
 var NavManager = function(){
 	this.defaultScrollX = 100;
@@ -203,6 +206,7 @@ function navHandler(msg){
 	}
 	var navMan = new NavManager(); 
 	msg = new VopMessage(msg,undefined);
+	addSessionAttribute(msg, globalConstants.ASKER_KEY, NavConstants.PRIMARY_INTENT_NAME);
 	var action = getMsgSlotValue(msg,NavConstants.BASIC_SCROLL_KEY);
 	var link = getMsgSlotValue(msg,NavConstants.LINK_KEY);
 	var browserNav = getMsgSlotValue(msg,NavConstants.BROWSER_NAV_KEY);
@@ -228,4 +232,21 @@ function navHandler(msg){
 		navMan.pdfNavHandler(msg,pdfNav);
 	}
 };
+
+// handle yes or no messages from user.
+function navResponseHandler(msg){
+	msg = new VopMessage(msg, undefined);
+	// the nav module wasn't looking for a response.
+	if(msg.getSessionAttribute(globalConstants.ASKER_KEY).toLowerCase()!=NavConstants.PRIMARY_INTENT_NAME){
+		return;
+	}
+	for(s of NavConstants.YES_NO_VARS){
+		console.log(s+":" + NavConstants[s]);
+		msg.addSlot(NavConstants[s], msg.getSlot("userResponse"));
+	}
+	navHandler(msg);
+}
+
+
 router.registerRoute("nav_intent",navHandler);
+router.registerRoute("respond_intent", navResponseHandler);

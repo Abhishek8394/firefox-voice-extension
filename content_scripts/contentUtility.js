@@ -3,6 +3,8 @@ var globalSession = new Session();
 
 const globalConstants = {
 	SCROLL_TARGET:"scrolling_target",
+	// several intents can be listening to respond_intent. So the intent that asked last will only be able to process the response.
+	ASKER_KEY:"asker_intent",
 	// keywords that we need in a response. In future VOP should provide atleast some of them (affirmative, negative, etc. words) as a slot.
 	YES_KEYWORDS: ["yes", "yay", "yep", "yeah", "ok", "okay"],
 	NO_KEYWORDS: ["no","nah","nope"],
