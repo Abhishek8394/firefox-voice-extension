@@ -118,9 +118,9 @@ NavManager.prototype.clickLink = function(msg,link){
 };
 NavManager.prototype.clickHandlersGenerator = function(){
 	var handlers = [];
-	var noResponses = ["no","nope"];
+	var noResponses = ["no","nope", "nah"];
 	var cancelResponses = ["cancel"];
-	var yesResponses = ["yes","click","yep","yeah"];
+	var yesResponses = ["yes", "yay", "yep", "yeah", "ok", "okay", "click"];
 	var noHandler = function(msg,elementList,currIndex,userReply,direction=1){
 		highlightElement(elementList[currIndex],"orange",false);
 		currIndex = (currIndex + (direction*1))%elementList.length;

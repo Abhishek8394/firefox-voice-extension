@@ -4,7 +4,7 @@ var globalSession = new Session();
 const globalConstants = {
 	SCROLL_TARGET:"scrolling_target",
 	// keywords that we need in a response. In future VOP should provide atleast some of them (affirmative, negative, etc. words) as a slot.
-	YES_KEYWORDS: ["yes", "yay", "yep", "yeah"],
+	YES_KEYWORDS: ["yes", "yay", "yep", "yeah", "ok", "okay"],
 	NO_KEYWORDS: ["no","nah","nope"],
 	SUBMIT_KEYWORDS: ["submit", "go"],
 	NEXT_KEYWORDS: ["next"],
@@ -59,14 +59,14 @@ function unHighlightElement(element){
 
 // Interact with user to decide on a option to choose. 
 // TODO cancel request, access by index number
-function ElementPicker(msg,elementList,currIndexKey,userReplySlotKey,sessionObject,expectedReplyHandlers,shouldHighlight=true,highlightColor="red",promptText,reprompt){
+function ElementPicker(msg,elementList,currIndexKey,userReplySlotKey,sessionObject,expectedReplyHandlers,shouldHighlight=true,highlightColor="red",promptText="",reprompt=""){
 	// var forms = formFillerSession.get("all_forms");
 	var currIndex = sessionObject.get(currIndexKey);
 	var userReply = msg.getSlot(userReplySlotKey);
-	if(promptText==undefined){
+	if(promptText==undefined || promptText==""){
 		promptText = "Perform input on element "+(currIndex+1)+"?";
 	}
-	reprompt=reprompt==undefined?promptText:reprompt;
+	reprompt=reprompt==undefined || reprompt==""?promptText:reprompt;
 	// console.log(userChosenIndex);
 	if(userReply!=undefined){
 		for(possibleReply of expectedReplyHandlers){

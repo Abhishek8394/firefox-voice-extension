@@ -106,10 +106,16 @@ function getVideoElement(msg){
 	return videos;
 }
 
+// determine if request is for this tab.
+// must be active tab or expicitly mentioned in the command.
+function isRequestForMe(msg){
+	return isActiveTab();
+}
+
 function videoController(msg){
 	var videos = getVideoElement(msg);
 	console.log(videos);
-	if(videos.length==0){return;}
+	if(videos.length==0 || !isRequestForMe(msg)){return;}
 	msg = new VopMessage(msg,undefined);
 	console.log(msg);
 	if(msg.request.intent.slots.volumeLevel!=undefined){
