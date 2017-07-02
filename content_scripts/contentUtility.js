@@ -2,7 +2,14 @@
 var globalSession = new Session();
 
 const globalConstants = {
-	SCROLL_TARGET:"scrolling_target"
+	SCROLL_TARGET:"scrolling_target",
+	// keywords that we need in a response. In future VOP should provide atleast some of them (affirmative, negative, etc. words) as a slot.
+	YES_KEYWORDS: ["yes", "yay", "yep", "yeah"],
+	NO_KEYWORDS: ["no","nah","nope"],
+	SUBMIT_KEYWORDS: ["submit", "go"],
+	NEXT_KEYWORDS: ["next"],
+	PREV_KEYWORDS: ["previous", "prev", "back"],
+	CANCEL_KEYWORDS: ["cancel", "abort"]
 };
 
 function globalInit(){

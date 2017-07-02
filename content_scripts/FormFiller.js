@@ -12,8 +12,8 @@ const FormConstants={
 	INPUT_ACTIVE_KEY:"current_input_field",
 	SELECT_OPTIONS_DISPLAYER:"select_options_displayer",
 	// user request keys
-	MSG_CHOSEN_FORM_INDEX:"formInput",
-	MSG_CHOSEN_INPUT_INDEX:"formInput",
+	MSG_CHOSEN_FORM_INDEX:"formCommand",
+	MSG_CHOSEN_INPUT_INDEX:"formCommand",
 	MSG_USER_INPUT:"formInput"
 };
 
@@ -119,12 +119,12 @@ function pickForm(msg){
 		}
 	};
 	var formReplyHandlers = [
-		{name:"yes",handler:formYesHandler, keywords:['yes', 'yep', 'yay']},
-		{name:"no",handler:formNoHandler, keywords:['no','nope']},
-		{name:"next",handler:formNextHandler},
-		{name:"previous",handler:formPrevHandler},
-		{name:"cancel",handler:formCancelHandler, keywords:['cancel','abort']},
-		{name:"submit",handler:formSubmitHandler, keywords:['submit','go']}
+		{name:"yes",handler:formYesHandler, keywords:globalConstants.YES_KEYWORDS},
+		{name:"no",handler:formNoHandler, keywords:globalConstants.NO_KEYWORDS},
+		{name:"next",handler:formNextHandler, keywords:globalConstants.NEXT_KEYWORDS},
+		{name:"previous",handler:formPrevHandler, keywords:globalConstants.PREV_KEYWORDS},
+		{name:"cancel",handler:formCancelHandler, keywords:globalConstants.CANCEL_KEYWORDS},
+		{name:"submit",handler:formSubmitHandler, keywords:globalConstants.SUBMIT_KEYWORDS}
 	];
 	ElementPicker(msg,forms,FormConstants.FORM_ASKING_KEY,
 		FormConstants.MSG_CHOSEN_FORM_INDEX,formFillerSession,formReplyHandlers,true,"red");
@@ -359,10 +359,10 @@ function formInputHandler(msg){
 		inputNoHandler(msg,userReply,1);
 	};
 	var inputReplyHandlers = [
-		{ name:"yes", handler:inputYesHandler },
-		{ name:"no", handler:inputNoHandler },
-		{ name:"next", handler:inputNextHandler },
-		{ name:"previous", handler:inputPrevHandler }
+		{ name:"yes", handler:inputYesHandler, keywords: globalConstants.YES_KEYWORDS },
+		{ name:"no", handler:inputNoHandler, keywords: globalConstants.NO_KEYWORDS },
+		{ name:"next", handler:inputNextHandler, keywords: globalConstants.NEXT_KEYWORDS },
+		{ name:"previous", handler:inputPrevHandler, keywords: globalConstants.PREV_KEYWORDS }
 	];
 	if(askForInput){	
 		var promptText = getPromptText(inpElements[elementOffset]);
