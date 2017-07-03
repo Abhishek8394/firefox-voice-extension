@@ -187,7 +187,9 @@ NavManager.prototype.pdfNavHandler = function(msg,pdfNav){
 		$('#previous').click();
 	}
 	else if(pageNum>=0){
-		var pageField = document.getElementById('pageContainer'+pageNum);
+		// var pageField = document.getElementById('pageContainer'+pageNum);
+		var pageField = document.getElementById('pageContainer'+pageNum) || $('.page[data-page-number="'+pageNum+'"]').get()[0];
+		console.log(pageField);
 		var foo=$('#pageContainer'+pageNum);
 		var viewerContainer = document.getElementById("viewerContainer");
 		if(pageField==undefined || viewerContainer==undefined){
