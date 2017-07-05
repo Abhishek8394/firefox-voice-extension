@@ -3,6 +3,8 @@ var eventTest = ["search_intent","create_tab","printRoutes","close_tab","foo_ill
 var ctr = 0;
 /* --------------- */
 
+var webServerUrl = "ws://127.0.0.1:8080/"+"hi";
+
 // Maintain list of tabs that are already loaded, avoid loading content scripts twice.
 var initializedTabs = new InitializedTabsRegistry();
 // Handle initialization of newly created tab. 
@@ -124,7 +126,8 @@ function initializeExistingTabs(){
 }
 
 function connectBackend(){	
-	var wbsock = new WebSocket("ws://127.0.0.1:8080/"+"hi");
+	console.log("calling connect backend");
+	var wbsock = new WebSocket(webServerUrl);
 	wbsock.onerror = function(err){
 		console.log("err");
 	};

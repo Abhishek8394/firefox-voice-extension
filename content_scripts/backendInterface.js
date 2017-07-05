@@ -27,6 +27,11 @@ function addSessionAttribute(vopMsgRcvd,key,value){
 	console.log(vopMsgRcvd.getAllSessionAttributes());
 }
 
+function removeSessionAttribute(vopMsgRcvd, key){
+	console.log("Removing session attribute: " + key);
+	vopMsgRcvd.removeSessionAttribute(key);
+}
+
 function pingHandler(msg){
 	if(msg.eventType=="ping"){
 		console.log("ping received");
