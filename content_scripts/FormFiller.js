@@ -26,7 +26,7 @@ const FormConstants={
 function selectElementsToggleDisplay(selectElement,show=true){
 	if(selectElement==undefined){
 		if(formFillerSession.get(FormConstants.SELECT_OPTIONS_DISPLAYER)!=undefined){
-			console.log("cached selct" + show);
+			console.log("cached select" + show);
 			formFillerSession.get(FormConstants.SELECT_OPTIONS_DISPLAYER).style.display=show?"block":"none";
 			if(show){
 				setGlobalScrollTarget(formFillerSession.get(FormConstants.SELECT_OPTIONS_DISPLAYER));
@@ -172,10 +172,10 @@ function getInputElements(form){
 
 // See if user allowed to enter input on this element. For now, filter out hidden elements.
 function isLegitInput(element){
-	if(element.attributes.type==undefined || element.attributes.type.value!="hidden"){
-		return true;
+	if((element.attributes.type!=undefined && element.attributes.type.value=="hidden") || element.offsetParent==null){
+		return false;
 	}
-	return false;
+	return true;
 }
 
 // Enter value in a form input. 
@@ -193,7 +193,7 @@ function performFormInput(msg){
 	switch(inputElement.tagName){
 		case "INPUT":
 			userInput = userInput==undefined?inputElement.value:userInput;
-			if(inputElement.type=="radio" || inputElement.type=="checkbox"){
+			if(isRadio(inputElement) || isCheckBox(inputElement)){
 				if(userInput!=undefined && isSayingYes(userInput)==true){
 					inputElement.checked=true;
 				}
@@ -218,6 +218,8 @@ function performFormInput(msg){
 				inputElement.click();
 			}
 			break;
+		default:
+			return false;
 	}
 	return true;
 }
@@ -235,23 +237,40 @@ function validFormNavigationRequest(msg){
 	return false;
 }
 
+function isCheckBox(inputElement){
+	return inputElement.tagName == "INPUT" && inputElement.type=="checkbox";
+}
+
+function isRadio(inputElement){
+	return inputElement.tagName == "INPUT" && inputElement.type=="radio";
+}
+
+function getLabelElem(inputElement){
+	return document.querySelector("label[for='"+inputElement.id+"']");
+}
+
+function getLabelForElem(inputElement, defaultValue){
+	var labelElem = getLabelElem(inputElement);
+	return labelElem? labelElem.innerHTML : defaultValue;
+}
+
 // Prompt text for elements
 function getPromptText(inputElement){
 	var promptText="";
 	switch(inputElement.tagName){
 		case "INPUT":
-			if(inputElement.type=="radio"){
-				promptText = "select this option?";
+			if(isRadio(inputElement)){
+				promptText = "select "+ getLabelForElem(inputElement, "this") +" option?";
 			}
-			else if(inputElement.type=="checkbox"){
-				promptText = "select this option?";
+			else if(isCheckBox(inputElement)){
+				promptText = "select "+getLabelForElem(inputElement, "this")+" option?";
 			}
 			else{
-				promptText = "select this element?";
+				promptText = "select this field?";
 			}
 			break;			
 		case "SELECT":
-			promptText = "Pick an option";
+			promptText = "Pick an option from this list?";
 			break;
 		case "BUTTON":
 			promptText = "Press this button?";
@@ -274,6 +293,10 @@ function getPromptText(inputElement){
 // 	return false;
 // }
 
+// check if it is a submit request
+function isSubmitRequest(msg){
+	return isAValidCommand(globalConstants.SUBMIT_KEYWORDS, msg.getSlot(FormConstants.MSG_CHOSEN_FORM_INDEX).value);
+}
 
 function formInputHandler(msg){
 	if(!isActiveTab()){
@@ -287,24 +310,33 @@ function formInputHandler(msg){
 	console.log(msg);
 	addSessionAttribute(msg, globalConstants.ASKER_KEY, FormConstants.PRIMARY_INTENT_NAME);
 	// check if a form decided for input
-	if(formFillerSession.get(FormConstants.CURR_FORM_KEY)==undefined || validFormNavigationRequest(msg)){
-		console.log("on form "+formFillerSession.get(FormConstants.CURR_FORM_KEY));
-		pickForm(msg);
-		// return;
+	var isAValidNavRequest = validFormNavigationRequest(msg);
+	if(formFillerSession.get(FormConstants.CURR_FORM_KEY)==undefined || isAValidNavRequest){
+		console.log("on form ");
+		console.log(formFillerSession.get(FormConstants.CURR_FORM_KEY));
+		// HACK ALERT. Form nav requests and input nav requests are essentially same and there is no way of telling one from other.
+		// So if form is undefined, or request is for 'submit' it is a form request, else it is an input request. 
+		var form = formFillerSession.get(FormConstants.CURR_FORM_KEY);
+		if(form==undefined || isSubmitRequest(msg)){
+			console.log("handled by form picker");
+			pickForm(msg);
+		}
+		
 	}
-	console.log("all set to operate!");
 	var form = formFillerSession.get(FormConstants.CURR_FORM_KEY);
 	if(form==undefined){
 		return;
 	}
+	console.log("all set to operate!");
 	var inpElements = getInputElements(form);
 	var askForInput = true;
-	console.log(inpElements);
+	// console.log(inpElements);
 	// loop through elements of chosen form.
 	// For separate treatment of inputs, selects and buttons
 	// var inputGroup = formFillerSession.get("input_group");
 	var elementOffset = formFillerSession.get(FormConstants.INPUT_OFFSET_KEY);
 	// If msg contains input for a input field.
+
 	if(msg.getSlot(FormConstants.MSG_USER_INPUT)!=undefined && formFillerSession.get(FormConstants.INPUT_ACTIVE_KEY)!=undefined){
 		askForInput = performFormInput(msg);
 	}
@@ -340,6 +372,9 @@ function formInputHandler(msg){
 		if(chosenInputField.tagName=="SELECT"){
 			selectElementsToggleDisplay(chosenInputField);
 		}
+		if(isRadio(chosenInputField) || isCheckBox(chosenInputField)){
+			chosenInputField.checked=true;
+		}
 	};
 	// When asking to confirm a input Element and user says no
 	var inputNoHandler = function(msg,userReply,movementDirection = 1){
@@ -364,11 +399,26 @@ function formInputHandler(msg){
 	var inputNextHandler = function(msg,userReply){
 		inputNoHandler(msg,userReply,1);
 	};
+	var cancelHandler = function(msg, userReply){
+		var chosenElement = inpElements[elementOffset];
+		console.log("cancelling");
+		if(chosenElement==undefined){return;}
+		if(chosenElement.tagName=="INPUT"){
+			if(isRadio(chosenElement) || isCheckBox(chosenElement)){
+				chosenElement.checked = false;
+			}
+			else{
+				chosenElement.value="";
+			}
+		}
+		selectElementsToggleDisplay(undefined,false);
+	};
 	var inputReplyHandlers = [
 		{ name:"yes", handler:inputYesHandler, keywords: globalConstants.YES_KEYWORDS },
 		{ name:"no", handler:inputNoHandler, keywords: globalConstants.NO_KEYWORDS },
 		{ name:"next", handler:inputNextHandler, keywords: globalConstants.NEXT_KEYWORDS },
-		{ name:"previous", handler:inputPrevHandler, keywords: globalConstants.PREV_KEYWORDS }
+		{ name:"previous", handler:inputPrevHandler, keywords: globalConstants.PREV_KEYWORDS },
+		{ name:"cancel", handler:cancelHandler, keywords: globalConstants.CANCEL_KEYWORDS }
 	];
 	if(askForInput){	
 		var promptText = getPromptText(inpElements[elementOffset]);		
