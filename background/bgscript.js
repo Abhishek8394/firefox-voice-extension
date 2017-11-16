@@ -4,6 +4,8 @@ var ctr = 0;
 /* --------------- */
 
 var webServerUrl = "ws://127.0.0.1:8080/"+"hi";
+var socketReconnectionInterval = 2000;
+console.log(navigator);
 
 // Maintain list of tabs that are already loaded, avoid loading content scripts twice.
 var initializedTabs = new InitializedTabsRegistry();
@@ -130,6 +132,7 @@ function connectBackend(){
 	var wbsock = new WebSocket(webServerUrl);
 	wbsock.onerror = function(err){
 		console.log("err");
+		setTimeout(connectBackend, socketReconnectionInterval);
 	};
 	// wbsock.onmessage = function(event){
 	// 	console.log(event.data);

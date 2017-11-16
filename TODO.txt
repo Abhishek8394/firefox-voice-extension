@@ -1,0 +1,13 @@
+// firefox-intents TODO
+easier commands for form navigation.
+
+foxy yes
+foxy no
+foxy submit form
+foxy next form
+foxy previous form
+.
+.
+.
+
+modify volume controller to accept direct volume commands without extra parameter
