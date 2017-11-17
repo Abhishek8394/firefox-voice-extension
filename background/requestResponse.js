@@ -43,6 +43,10 @@ var VopMessage = function(vopData,vopConn){
 	this.session = vopData.session;
 	this.request = vopData.request;
 	this.vopConn = vopConn;
+	if(vopConn == undefined){
+		console.log("attention", vopData);
+		console.log(this);
+	}
 };
 
 VopMessage.prototype.getVopConnection = function(){
@@ -63,6 +67,13 @@ VopMessage.prototype.getApplicationId = function(){
 };
 
 VopMessage.prototype.getAllSessionAttributes = function(){
+	return this.getSession().attributes;
+};
+
+VopMessage.prototype.getOrSetAllSessionAttributes = function(){
+	if(this.getSession().attributes == null){
+		this.getSession().attributes = {};
+	}
 	return this.getSession().attributes;
 };
 
